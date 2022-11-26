@@ -1,0 +1,19 @@
+{
+    "observer": "test@example.com",
+    "source": "direct",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -122.2850385,
+        "latitude": 37.7987407
+    },
+    "payload": {
+        "payload_ref": 1,
+        "observation_type": "facility",
+        "facility_description": {
+            "energy": ["electricity:voltage:lower"]
+        },
+        "description": "PG&E Substation C"
+
+    }
+}

@@ -1,0 +1,471 @@
+{
+  "title": "ObservationWrapper",
+  "description": "The base schema for all observations",
+  "type": "object",
+  "properties": {
+    "observer": {
+      "title": "Observer",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/definitions/SourceType"
+    },
+    "observed_at": {
+      "title": "Observed At",
+      "type": "string",
+      "format": "date-time"
+    },
+    "submitted_at": {
+      "title": "Submitted At",
+      "type": "string",
+      "format": "date-time"
+    },
+    "location": {
+      "title": "Location",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/LatLongLocation"
+        },
+        {
+          "$ref": "#/definitions/GeohashLocation"
+        },
+        {
+          "$ref": "#/definitions/PlusCodeLocation"
+        }
+      ]
+    },
+    "payload": {
+      "title": "Payload",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/AssetObservation"
+        },
+        {
+          "$ref": "#/definitions/TransportObservation"
+        },
+        {
+          "$ref": "#/definitions/FacilityObservation"
+        },
+        {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/AssetObservation"
+              },
+              {
+                "$ref": "#/definitions/TransportObservation"
+              },
+              {
+                "$ref": "#/definitions/FacilityObservation"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "observer",
+    "source",
+    "observed_at",
+    "submitted_at",
+    "location",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "SourceType": {
+      "title": "SourceType",
+      "description": "An enumeration.",
+      "enum": [
+        "direct",
+        "scrape",
+        "online",
+        "capture",
+        "other"
+      ],
+      "type": "string"
+    },
+    "LatLongLocation": {
+      "title": "LatLongLocation",
+      "description": "A location, specified by a longitude and latitude as floats",
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "title": "Longitude",
+          "type": "number"
+        },
+        "latitude": {
+          "title": "Latitude",
+          "type": "number"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    },
+    "GeohashLocation": {
+      "title": "GeohashLocation",
+      "description": "A location, specified as a geohash",
+      "type": "object",
+      "properties": {
+        "geohash": {
+          "title": "Geohash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "geohash"
+      ]
+    },
+    "PlusCodeLocation": {
+      "title": "PlusCodeLocation",
+      "description": "A location, specified as a plus code",
+      "type": "object",
+      "properties": {
+        "pluscode": {
+          "title": "Pluscode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pluscode"
+      ]
+    },
+    "VehicleType": {
+      "title": "VehicleType",
+      "description": "The enum of valid vehicle types for AssetObservations",
+      "enum": [
+        "vehicle:ship:container",
+        "vehicle:ship:oil",
+        "vehicle:ship:bulk",
+        "vehicle:rail:car",
+        "vehicle:truck:semi_tractor",
+        "vehicle:truck:panel",
+        "vehicle:truck:delivery_van",
+        "vehicle:aircraft:cargo",
+        "vehicle:aircraft:passenger"
+      ],
+      "type": "string"
+    },
+    "ContainerType": {
+      "title": "ContainerType",
+      "description": "The enum of valid container types for AssetObservations",
+      "enum": [
+        "container:multimodal_container:40ft",
+        "container:multimodal_container:20ft",
+        "container:multimodal_container:10ft",
+        "container:trailer:enclosed",
+        "container:trailer:refrigerated",
+        "container:trailer:livestock",
+        "container:tank:metal",
+        "container:tank:plastic"
+      ],
+      "type": "string"
+    },
+    "IDType": {
+      "title": "IDType",
+      "description": "An enumeration.",
+      "enum": [
+        "plate:united_states",
+        "BIC"
+      ],
+      "type": "string"
+    },
+    "AssetId": {
+      "title": "AssetId",
+      "description": "A fragment describing an Asset ID",
+      "type": "object",
+      "properties": {
+        "id_type": {
+          "$ref": "#/definitions/IDType"
+        },
+        "id_text": {
+          "title": "Id Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id_type",
+        "id_text"
+      ]
+    },
+    "AssetConfiguration": {
+      "title": "AssetConfiguration",
+      "description": "An enumeration.",
+      "enum": [
+        "free_standing",
+        "stacked",
+        "mounted:pad",
+        "mounted:trailer",
+        "mounted:pole",
+        "mounted:tower",
+        "mounted:shelf",
+        "stationary:road",
+        "stationary:rail",
+        "stationary:other",
+        "moving:road",
+        "moving:rail",
+        "moving:marine",
+        "moving:airborne"
+      ],
+      "type": "string"
+    },
+    "AssetObservation": {
+      "title": "AssetObservation",
+      "description": "An observation of an asset",
+      "type": "object",
+      "properties": {
+        "payload_ref": {
+          "title": "Payload Ref",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "observation_type": {
+          "title": "Observation Type",
+          "enum": [
+            "asset"
+          ],
+          "type": "string"
+        },
+        "asset_type": {
+          "title": "Asset Type",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VehicleType"
+            },
+            {
+              "$ref": "#/definitions/ContainerType"
+            },
+            {
+              "enum": [
+                "asset:generic"
+              ],
+              "type": "string"
+            }
+          ]
+        },
+        "asset_id": {
+          "title": "Asset Id",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/AssetId"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AssetId"
+              }
+            }
+          ]
+        },
+        "configuration": {
+          "$ref": "#/definitions/AssetConfiguration"
+        }
+      },
+      "required": [
+        "observation_type",
+        "asset_type",
+        "asset_id"
+      ],
+      "additionalProperties": false
+    },
+    "TransportMode": {
+      "title": "TransportMode",
+      "description": "The basic modes of transport that a TransportObservation can describe",
+      "enum": [
+        "rail",
+        "semi_trailer",
+        "ship",
+        "truck"
+      ],
+      "type": "string"
+    },
+    "PayloadRef": {
+      "title": "PayloadRef",
+      "type": "object",
+      "properties": {
+        "ref": {
+          "title": "Ref",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ref"
+      ]
+    },
+    "TransportObservation": {
+      "title": "TransportObservation",
+      "description": "An observation of a transportation, optionally referring to other observation payloads",
+      "type": "object",
+      "properties": {
+        "payload_ref": {
+          "title": "Payload Ref",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "observation_type": {
+          "title": "Observation Type",
+          "enum": [
+            "transport"
+          ],
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/definitions/TransportMode"
+        },
+        "transporter": {
+          "$ref": "#/definitions/PayloadRef"
+        },
+        "vessel": {
+          "$ref": "#/definitions/PayloadRef"
+        }
+      },
+      "required": [
+        "observation_type",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "EnergyType": {
+      "title": "EnergyType",
+      "description": "An enumeration.",
+      "enum": [
+        "electricity:voltage:lower",
+        "electricity:voltage:raise",
+        "electricity:generate",
+        "voltage"
+      ],
+      "type": "string"
+    },
+    "MineType": {
+      "title": "MineType",
+      "description": "An enumeration.",
+      "enum": [
+        "limestone",
+        "gold"
+      ],
+      "type": "string"
+    },
+    "FacilityDescription": {
+      "title": "FacilityDescription",
+      "type": "object",
+      "properties": {
+        "energy": {
+          "title": "Energy",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/EnergyType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EnergyType"
+              }
+            }
+          ]
+        },
+        "mine": {
+          "title": "Mine",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MineType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MineType"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Process": {
+      "title": "Process",
+      "description": "An enumeration.",
+      "enum": [
+        "process:extraction:surface_mining",
+        "process:reaction:chloralkali",
+        "process:reaction:calcination",
+        "process:reaction:smelting",
+        "process:reaction:bayer",
+        "process:reaction:hall_heroult"
+      ],
+      "type": "string"
+    },
+    "FacilityObservation": {
+      "title": "FacilityObservation",
+      "description": "An observation of a facility",
+      "type": "object",
+      "properties": {
+        "payload_ref": {
+          "title": "Payload Ref",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ]
+        },
+        "observation_type": {
+          "title": "Observation Type",
+          "enum": [
+            "facility"
+          ],
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "facility_description": {
+          "$ref": "#/definitions/FacilityDescription"
+        },
+        "processes": {
+          "title": "Processes",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Process"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Process"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "observation_type",
+        "description",
+        "facility_description"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

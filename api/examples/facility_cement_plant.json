@@ -1,0 +1,19 @@
+{
+    "observer": "test@example.com",
+    "source": "direct",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -122.0860208,
+        "latitude": 37.3211345
+    },
+    "payload": {
+        "observation_type": "facility",
+        "facility_description": {
+            "mine": ["limestone"],
+            "factory": ["cement"]
+        },
+        "description": "Lehigh Cement Permanente Plant",
+        "processes": ["process:extraction:surface_mining", "process:reaction:bayer"]    
+    }
+}

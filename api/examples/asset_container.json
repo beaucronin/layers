@@ -1,0 +1,43 @@
+{
+    "observer": "test@example.com",
+    "source": "direct",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -122.0860208,
+        "latitude": 37.3211345
+    },
+    "payload": [
+        {
+            "payload_ref": 1,
+            "observation_type": "asset",
+            "asset_type": "container:multimodal_container:40ft",
+            "configuration": "mounted:trailer",
+            "asset_id": {
+                "id_type": "BIC",
+                "id_text": "XXXX 11111111 1"
+            }
+        },
+        {
+            "payload_ref": 2,
+            "observation_type": "asset",
+            "asset_type": "vehicle:truck:semi_tractor",
+            "configuration": "moving:road",
+            "asset_id": {
+                "id_type": "plate:united_states",
+                "id_text": "1XYZ234"
+            }
+        },
+        {
+            "payload_ref": 3,
+            "observation_type": "transport",
+            "mode": "semi_trailer",
+            "transporter": {
+                "ref": 2
+            },
+            "vessel":  {
+                "ref": 1
+            }
+        }
+    ]
+}
