@@ -55,6 +55,7 @@ class ContainerType(str, Enum):
     TRACTOR_TRAILER = "container:trailer:enclosed"
     REFRIGERATED_TRAILER = "container:trailer:refrigerated"
     LIVESTOCK_TRAILER = "container:trailer:livestock"
+    TANK_TRAILER = "container:trailer:tank"
     METAL_TANK = "container:tank:metal"
     PLASTIC_TANK = "container:tank:plastic"
 
@@ -101,60 +102,139 @@ class TransportMode(str, Enum):
     SEMI_TRAILER = "semi_trailer"
     SHIP = "ship"
     TRUCK = "truck"
+    PIPELINE = "pipeline"
 
 
 class TransportObservation(Observation):
     """An observation of a transportation, optionally referring to other observation payloads"""
     observation_type: Literal['transport']
     mode: TransportMode
-    transporter: Optional[PayloadRef]
-    vessel: Optional[PayloadRef]
+    transporter: Optional[PayloadRef | list[PayloadRef]]
+    vessel: Optional[PayloadRef | list[PayloadRef]]
 
 
 class Factory(BaseModel):
     pass
 
 
-class FacilityDescription(BaseModel):
-    class MineType(str, Enum):
-        LIMESTONE = "limestone"
-        GOLD = "gold"
-
-    class FactoryType(str, Enum):
-        TEXTILE = "textile"
-        EQUIPMENT = "equipment"
-        FOOD = "food"
-
-    class RefineryType(str, Enum):
-        PETROLEUM = "petroleum"
-        METAL = "metal"
-    
-    class EnergyType(str, Enum):
-        LOWER_VOLTAGE = "electricity:voltage:lower"
-        RAISE_VOLTAGE = "electricity:voltage:raise"
-        GENERATE_ELECTRICITY = "electricity:generate"
-        VOLTAGE_REDUCE = "voltage"
-
-    energy: Optional[EnergyType | list[EnergyType]]
-    mine: Optional[MineType | list[MineType]]
-
-
-class Process(str, Enum):
-    SURFACE_MINING = "process:extraction:surface_mining"
-
-    CHLORALKALI = "process:reaction:chloralkali"
-    CALCINATION = "process:reaction:calcination"
-    SMELTING = "process:reaction:smelting"
-    BAYER = "process:reaction:bayer"
-    HALL_HEROULT = "process:reaction:hall_heroult"
 
 
 class FacilityObservation(Observation):
     """An observation of a facility"""
+
+    class FacilityDescription(BaseModel):
+        class EnergyType(str, Enum):
+            LOWER_VOLTAGE = "electricity:voltage:lower"
+            RAISE_VOLTAGE = "electricity:voltage:raise"
+            GENERATE_ELECTRICITY = "electricity:generate"
+            STORE_ELECTRICITY = "electricity:store"
+            CONDITION_ELECTRICITY = "electricity:condition"
+
+        class FactoryType(str, Enum):
+            TEXTILE = "textile"
+            EQUIPMENT = "equipment"
+            FOOD = "food"
+
+        class MineType(str, Enum):
+            GOLD = "gold"
+            SILVER = "silver"
+            PLATINUM = "platinum"
+            LIMESTONE = "limestone"
+            COAL = "coal"
+            GRAVEL = "gravel"
+            SAND = "sand"
+            BAUXITE = "bauxite"
+            LITHIUM = "lithium"
+            URANIUM = "uranium"
+            POTASH = "potash"
+            SULFUR = "sulfur"
+            SALT = "salt"
+            RARE_EARTH = "rare_earth"
+            IRON = "iron"
+            COLTAN = "coltan"
+
+        class RefineryType(str, Enum):
+            PETROLEUM = "petroleum"
+            METAL = "metal"
+            OTHER = "other"
+
+        energy: Optional[EnergyType | list[EnergyType]]
+        factory: Optional[FactoryType | list[FactoryType]]
+        mine: Optional[MineType | list[MineType]]
+        refinery: Optional[RefineryType | list[RefineryType]]
+
+    class Process(str, Enum):
+        OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
+        STRIP_MINING = "extraction:surface_mining:strip"
+        SHAFT_MINING = "extraction:underground_mining:shaft"
+        DRIFT_MINING = "extraction:underground_mining:drift"
+        SLOPE_MINING = "extraction:underground_mining:slope"
+        
+        CHLORALKALI = "reaction:chloralkali"
+        CALCINATION = "reaction:calcination"
+        SMELTING = "reaction:smelting"
+        BAYER = "reaction:bayer"
+        HALL_HEROULT = "reaction:hall_heroult"
+        
+        DISTILLATION = "reaction:distillation"
+        BREWING = "reaction:brewing"
+
+        ELECTROPLATING = "reaction:electroplating"
+        ELECTROWINNING = "reaction:electrowinning"
+        ELECTROPOLISHING = "reaction:electropolishing"
+        ANODIZING = "reaction:anodizing"
+
+        GINNING = "textile:ginning"
+        CARDING = "textile:carding"
+        COMBING = "textile:combing"
+        SPINNING = "textile:spinning"
+        WINDING = "textile:winding"
+        WARPING = "textile:warping"
+        WEAVING = "textile:weaving"
+
+
     observation_type: Literal['facility']
     description: str
     facility_description: FacilityDescription
     processes: Optional[Process | list[Process]]
+
+
+class ResourceObservation(Observation):
+    """An observation of a natural resource"""
+
+    class ResourceId(BaseModel):
+        """A fragment describing a Resource ID"""
+
+        class IDType(str, Enum):
+            pass
+
+        id_type: IDType
+        id_text: str
+
+    class Amount(BaseModel):
+        """An amount of a resource"""
+
+        class ResourceUnit(str, Enum):
+            ACRE = "acre"
+            HECTARE = "hectare"
+            SQUARE_METER = "m2"
+            ACRE_FOOT = "acre_foot"
+            GALLON = "gallon"
+            CUBIC_METER = "m3"
+            TON = "ton"  # short ton; 2000 pounds
+            TONNE = "tonne"  # metric ton; 1000 kg
+            BARREL = "bbl"
+            POUNDS = "lbs"
+            KILOGRAMS = "kg"
+            BTU = "btu"
+
+        unit: ResourceUnit
+        quantity: str | float
+
+    observation_type: Literal['resource']
+    description: str
+    resource_id: ResourceId
+    amount: Amount
 
 
 class SourceType(str, Enum):
@@ -168,8 +248,8 @@ class SourceType(str, Enum):
 SomeObservation = AssetObservation | TransportObservation | FacilityObservation
 
 
-class ObservationWrapper(BaseModel, extra=Extra.forbid):
-    """The base schema for all observations"""
+class ObservationWrapper(BaseModel, extra=Extra.forbid, title="Observation"):
+    """NOTE: This schema is automatically generated and should not be modified here"""
     observer: str
     source: SourceType
     observed_at: datetime
