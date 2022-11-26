@@ -1,6 +1,6 @@
 {
-  "title": "ObservationWrapper",
-  "description": "The base schema for all observations",
+  "title": "Observation",
+  "description": "NOTE: This schema is automatically generated and should not be modified here",
   "type": "object",
   "properties": {
     "observer": {
@@ -160,6 +160,7 @@
         "container:trailer:enclosed",
         "container:trailer:refrigerated",
         "container:trailer:livestock",
+        "container:trailer:tank",
         "container:tank:metal",
         "container:tank:plastic"
       ],
@@ -285,7 +286,8 @@
         "rail",
         "semi_trailer",
         "ship",
-        "truck"
+        "truck",
+        "pipeline"
       ],
       "type": "string"
     },
@@ -336,10 +338,32 @@
           "$ref": "#/definitions/TransportMode"
         },
         "transporter": {
-          "$ref": "#/definitions/PayloadRef"
+          "title": "Transporter",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PayloadRef"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PayloadRef"
+              }
+            }
+          ]
         },
         "vessel": {
-          "$ref": "#/definitions/PayloadRef"
+          "title": "Vessel",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PayloadRef"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PayloadRef"
+              }
+            }
+          ]
         }
       },
       "required": [
@@ -355,7 +379,18 @@
         "electricity:voltage:lower",
         "electricity:voltage:raise",
         "electricity:generate",
-        "voltage"
+        "electricity:store",
+        "electricity:condition"
+      ],
+      "type": "string"
+    },
+    "FactoryType": {
+      "title": "FactoryType",
+      "description": "An enumeration.",
+      "enum": [
+        "textile",
+        "equipment",
+        "food"
       ],
       "type": "string"
     },
@@ -363,8 +398,32 @@
       "title": "MineType",
       "description": "An enumeration.",
       "enum": [
+        "gold",
+        "silver",
+        "platinum",
         "limestone",
-        "gold"
+        "coal",
+        "gravel",
+        "sand",
+        "bauxite",
+        "lithium",
+        "uranium",
+        "potash",
+        "sulfur",
+        "salt",
+        "rare_earth",
+        "iron",
+        "coltan"
+      ],
+      "type": "string"
+    },
+    "RefineryType": {
+      "title": "RefineryType",
+      "description": "An enumeration.",
+      "enum": [
+        "petroleum",
+        "metal",
+        "other"
       ],
       "type": "string"
     },
@@ -386,6 +445,20 @@
             }
           ]
         },
+        "factory": {
+          "title": "Factory",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/FactoryType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FactoryType"
+              }
+            }
+          ]
+        },
         "mine": {
           "title": "Mine",
           "anyOf": [
@@ -399,6 +472,20 @@
               }
             }
           ]
+        },
+        "refinery": {
+          "title": "Refinery",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RefineryType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RefineryType"
+              }
+            }
+          ]
         }
       }
     },
@@ -406,12 +493,29 @@
       "title": "Process",
       "description": "An enumeration.",
       "enum": [
-        "process:extraction:surface_mining",
-        "process:reaction:chloralkali",
-        "process:reaction:calcination",
-        "process:reaction:smelting",
-        "process:reaction:bayer",
-        "process:reaction:hall_heroult"
+        "extraction:surface_mining:open_pit",
+        "extraction:surface_mining:strip",
+        "extraction:underground_mining:shaft",
+        "extraction:underground_mining:drift",
+        "extraction:underground_mining:slope",
+        "reaction:chloralkali",
+        "reaction:calcination",
+        "reaction:smelting",
+        "reaction:bayer",
+        "reaction:hall_heroult",
+        "reaction:distillation",
+        "reaction:brewing",
+        "reaction:electroplating",
+        "reaction:electrowinning",
+        "reaction:electropolishing",
+        "reaction:anodizing",
+        "textile:ginning",
+        "textile:carding",
+        "textile:combing",
+        "textile:spinning",
+        "textile:winding",
+        "textile:warping",
+        "textile:weaving"
       ],
       "type": "string"
     },
