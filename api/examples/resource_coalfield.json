@@ -1,0 +1,19 @@
+{
+    "observer": "test@example.com",
+    "source": "direct",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -105.933208,
+        "latitude": 46.288739
+    },
+    "payload": {
+        "observation_type": "resource",
+        "description": "Fort Union Region Lignite Coal Field",
+        "resource_id": {
+            "id_type": "",
+            "id_text": ""
+        },
+        "shape": "POLYGON ((-105.933208 46.288739, -105.936168 46.290425, ...))"
+    }
+}

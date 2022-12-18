@@ -24,6 +24,14 @@ class PlusCodeLocation(BaseModel):
     pluscode: str
 
 
+class AddressLocation(BaseModel):
+    """A location, specified by an address"""
+    address: str
+
+
+Location = LatLongLocation | GeohashLocation | PlusCodeLocation
+
+
 class PayloadRef(BaseModel):
     ref: str | int
 
@@ -34,49 +42,46 @@ class Observation(BaseModel, extra=Extra.forbid):
     payload_ref: Optional[str | int]
 
 
-class VehicleType(str, Enum):
-    """The enum of valid vehicle types for AssetObservations"""
-    CONTAINER_SHIP = "vehicle:ship:container"
-    OIL_TANKER = "vehicle:ship:oil"
-    BULK_CARRIER = "vehicle:ship:bulk"
-    RAIL_CAR = "vehicle:rail:car"
-    SEMI_TRACTOR = "vehicle:truck:semi_tractor"
-    PANEL_TRUCK = "vehicle:truck:panel"
-    DELIVERY_VAN = "vehicle:truck:delivery_van"
-    CARGO_AIRCRAFT = "vehicle:aircraft:cargo"
-    PASSENGER_AIRCRAFT = "vehicle:aircraft:passenger"
-
-
-class ContainerType(str, Enum):
-    """The enum of valid container types for AssetObservations"""
-    SHIPPING_CONTAINER_40 = "container:multimodal_container:40ft"
-    SHIPPING_CONTAINER_20 = "container:multimodal_container:20ft"
-    SHIPPING_CONTAINER_10 = "container:multimodal_container:10ft"
-    TRACTOR_TRAILER = "container:trailer:enclosed"
-    REFRIGERATED_TRAILER = "container:trailer:refrigerated"
-    LIVESTOCK_TRAILER = "container:trailer:livestock"
-    TANK_TRAILER = "container:trailer:tank"
-    METAL_TANK = "container:tank:metal"
-    PLASTIC_TANK = "container:tank:plastic"
-
-
-class AssetId(BaseModel):
-    """A fragment describing an Asset ID"""
-
-    class IDType(str, Enum):
-        US_LICENSE = "plate:united_states"
-        BIC = "BIC"
-
-    id_type: IDType
-    id_text: str
-
-
 class AssetObservation(Observation):
     """An observation of an asset"""
 
+    class VehicleType(str, Enum):
+        """The enum of valid vehicle types for AssetObservations"""
+        CONTAINER_SHIP = "vehicle:ship:container"
+        OIL_TANKER = "vehicle:ship:oil"
+        BULK_CARRIER = "vehicle:ship:bulk"
+        RAIL_CAR = "vehicle:rail:car"
+        SEMI_TRACTOR = "vehicle:truck:semi_tractor"
+        PANEL_TRUCK = "vehicle:truck:panel"
+        DELIVERY_VAN = "vehicle:truck:delivery_van"
+        CARGO_AIRCRAFT = "vehicle:aircraft:cargo"
+        PASSENGER_AIRCRAFT = "vehicle:aircraft:passenger"
+
+    class ContainerType(str, Enum):
+        """The enum of valid container types for AssetObservations"""
+        SHIPPING_CONTAINER_40 = "container:multimodal_container:40ft"
+        SHIPPING_CONTAINER_20 = "container:multimodal_container:20ft"
+        SHIPPING_CONTAINER_10 = "container:multimodal_container:10ft"
+        TRACTOR_TRAILER = "container:trailer:enclosed"
+        REFRIGERATED_TRAILER = "container:trailer:refrigerated"
+        LIVESTOCK_TRAILER = "container:trailer:livestock"
+        TANK_TRAILER = "container:trailer:tank"
+        METAL_TANK = "container:tank:metal"
+        PLASTIC_TANK = "container:tank:plastic"
+
+    class AssetId(BaseModel):
+        """A fragment describing an Asset ID"""
+
+        class IDType(str, Enum):
+            US_LICENSE = "plate:united_states"
+            BIC = "BIC"
+
+        id_type: IDType
+        id_text: str
+
     class AssetConfiguration(str, Enum):
-        FREE_STANDING = "free_standing"
-        STACKED = "stacked"
+        FREE_STANDING = "open:free_standing"
+        STACKED = "open:stacked"
         PAD_MOUNTED = "mounted:pad"
         TRAILER_MOUNTED = "mounted:trailer"
         POLE_MOUNTED = "mounted:pole"
@@ -96,27 +101,27 @@ class AssetObservation(Observation):
     configuration: Optional[AssetConfiguration]
 
 
-class TransportMode(str, Enum):
-    """The basic modes of transport that a TransportObservation can describe"""
-    RAIL = "rail"
-    SEMI_TRAILER = "semi_trailer"
-    SHIP = "ship"
-    TRUCK = "truck"
-    PIPELINE = "pipeline"
-
-
 class TransportObservation(Observation):
     """An observation of a transportation, optionally referring to other observation payloads"""
+
+    class TransportMode(str, Enum):
+        """The basic modes of transport that a TransportObservation can describe"""
+        RAIL = "rail"
+        SEMI_TRAILER = "semi_trailer"
+        SHIP = "ship"
+        TRUCK = "truck"
+        PIPELINE = "pipeline"
+
+    class Route(BaseModel):
+        pass
+        # description = Optional[str]
+        # waypoints = list[Location]
+
     observation_type: Literal['transport']
     mode: TransportMode
     transporter: Optional[PayloadRef | list[PayloadRef]]
     vessel: Optional[PayloadRef | list[PayloadRef]]
-
-
-class Factory(BaseModel):
-    pass
-
-
+    route: Optional[Route]
 
 
 class FacilityObservation(Observation):
@@ -134,6 +139,7 @@ class FacilityObservation(Observation):
             TEXTILE = "textile"
             EQUIPMENT = "equipment"
             FOOD = "food"
+            MATERIAL = "material"
 
         class MineType(str, Enum):
             GOLD = "gold"
@@ -169,13 +175,13 @@ class FacilityObservation(Observation):
         SHAFT_MINING = "extraction:underground_mining:shaft"
         DRIFT_MINING = "extraction:underground_mining:drift"
         SLOPE_MINING = "extraction:underground_mining:slope"
-        
+
         CHLORALKALI = "reaction:chloralkali"
         CALCINATION = "reaction:calcination"
         SMELTING = "reaction:smelting"
         BAYER = "reaction:bayer"
         HALL_HEROULT = "reaction:hall_heroult"
-        
+
         DISTILLATION = "reaction:distillation"
         BREWING = "reaction:brewing"
 
@@ -183,6 +189,21 @@ class FacilityObservation(Observation):
         ELECTROWINNING = "reaction:electrowinning"
         ELECTROPOLISHING = "reaction:electropolishing"
         ANODIZING = "reaction:anodizing"
+        ELECTROLYSIS = "reaction:electrolysis"
+
+        MACHINING = "fabrication:machining"
+        CNC = "fabrication:machining:cnc"
+        CUTTING = "fabrication:machining:cutting"
+        FDM = "fabrication:additive:fdm"
+        SLS = "fabrication:additive:sls"
+        SLA = "fabrication:additive:sla"
+        WELDING = "fabrication:welding"
+        PAINTING = "fabrication:painting"
+        ASSEMBLY = "fabrication:assembly"
+        CASTING = "fabrication:casting"
+        FORGING = "fabrication:forging"
+        INJECTION_MOLDING = "fabrication:injection_molding"
+        FABRICATION = "fabrication:various"
 
         GINNING = "textile:ginning"
         CARDING = "textile:carding"
@@ -192,12 +213,16 @@ class FacilityObservation(Observation):
         WARPING = "textile:warping"
         WEAVING = "textile:weaving"
 
+        WASTEWATER_TREATMENT = "water:treatment"
+        DESALINATION = "water:desalination"
 
     observation_type: Literal['facility']
     description: str
     facility_description: FacilityDescription
     processes: Optional[Process | list[Process]]
 
+class Shape(BaseModel):
+    pass
 
 class ResourceObservation(Observation):
     """An observation of a natural resource"""
@@ -235,6 +260,13 @@ class ResourceObservation(Observation):
     description: str
     resource_id: ResourceId
     amount: Amount
+    shape: Optional[Shape]
+
+
+class ExtentObservation(Observation):
+    """An observation of a human-defined bounary or area"""
+
+    shape: Optional[Shape]
 
 
 class SourceType(str, Enum):
@@ -254,7 +286,7 @@ class ObservationWrapper(BaseModel, extra=Extra.forbid, title="Observation"):
     source: SourceType
     observed_at: datetime
     submitted_at: datetime
-    location: LatLongLocation | GeohashLocation | PlusCodeLocation
+    location: Location
     payload: SomeObservation | list[SomeObservation]
 
 

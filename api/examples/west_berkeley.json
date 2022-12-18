@@ -1,0 +1,51 @@
+{
+    "observer": "test@example.com",
+    "source": "online",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -122.3041627,
+        "latitude": 37.8789021
+    },
+    "payload": [
+        {
+            "payload_ref": 1,
+            "observation_type": "facility",
+            "description": "Terminal Manufacturing Company facility",
+            "facility_description": {
+                "factory": "equipment"
+            },
+            "processes": [
+                "fabrication:cnc",
+                "fabrication:assembly",
+                "fabrication:welding"
+            ]
+        }
+    ]
+}
+
+{
+    "observer": "test@example.com",
+    "source": "online",
+    "observed_at": "2022-11-24T23:30:35+0000",
+    "submitted_at": "2022-11-24T23:30:35+0000",
+    "location": {
+        "longitude": -122.3030672,
+        "latitude": 37.8717557
+    }
+    "payload": [
+        {
+            "payload_ref": 1,
+            "observation_type": "facility",
+            "description": "Martin Marietta Berkeley Asphalt",
+            "facility_description": {
+                "factory": ""
+            },
+            "processes": []
+        }
+    ]
+}
+
+{
+    "payload": 
+}
