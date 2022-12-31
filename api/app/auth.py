@@ -1,11 +1,16 @@
+from fastapi import HTTPException, status
+from typing import Optional
 import os
-from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import jwt
+from passlib.context import CryptContext
+from jose import jwt, JWTError
+from sqlalchemy import select
 from .models import UserInDB
+from .db import db, Users
 
-
-SECRET_KEY = os.getenv("LAYERS_SECRET_KEY")
+# Adapted from https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/
+# and https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/
+SECRET_KEY = os.getenv("LAYERS_SECRET_KEY", "")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -20,28 +25,59 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+async def get_user(user_db, username: str) -> Optional[UserInDB]:
+    query = select(Users).filter(Users.username == username)
+    users = await user_db.fetch_all(query=query)
+    if len(users) > 0:
+        user = users[0]
+        return UserInDB(**user._mapping)
+    else:
+        return None
 
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+async def authenticate_user(user_db, username: str, password: str) -> Optional[UserInDB]:
+    user = await get_user(user_db, username)
     if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
+        return None
+    if not verify_password(password, user.password):
+        return None
     return user
 
+
+def username_from_token(token: str) -> Optional[str]:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    return payload.get("sub")
+
+
+async def user_from_token(token: str, user_db) -> Optional[UserInDB]:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        username = username_from_token(token)
+        print(username)
+    except JWTError:
+        raise credentials_exception
+
+    if not username:
+        raise credentials_exception
+    try:
+        user = await get_user(user_db, username)
+        print(user)
+    except:
+        raise credentials_exception
+    
+    if not user:
+        raise credentials_exception
+    return user
+        

@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Literal
 from enum import Enum
 from datetime import datetime
@@ -10,13 +11,17 @@ from pydantic import BaseModel, Extra
 
 class LatLongLocation(BaseModel):
     """A location, specified by a longitude and latitude as floats"""
-    longitude: float
-    latitude: float
+    longitude: str
+    latitude: str
 
 
 class GeohashLocation(BaseModel):
     """A location, specified as a geohash"""
     geohash: str
+
+    class Config:
+        json_loads = json.loads
+        json_dumps = json.dumps
 
 
 class PlusCodeLocation(BaseModel):
@@ -127,6 +132,36 @@ class TransportObservation(Observation):
 class FacilityObservation(Observation):
     """An observation of a facility"""
 
+    FD_DATA = [
+        ["energy", "electricity:voltage:lower", "Electricity ➤ Lower Voltage", "#4455ee"],        
+        ["energy", "electricity:voltage:raise", "Electricity ➤ Raise Voltage", "#4455ee"],        
+        ["energy", "electricity:generate", "Electricity ➤ Generate", "#4455ee"],        
+        ["energy", "electricity:store", "Electricity ➤ Store", "#4455ee"],        
+        ["energy", "electricity:condition", "Electricity ➤ Condition", "#4455ee"],
+        ["factory", "textile", "Factory ➤ Textile", "#ee5544"],
+        ["factory", "equipment", "Factory ➤ Equipment", "#ee5544"],
+        ["factory", "food", "Factory ➤ Food", "#ee5544"],
+        ["factory", "material", "Factory ➤ Material", "#ee5544"],
+        ["mine", "gold", "Mine ➤ Gold", "#eeaa44"],
+        ["mine", "silver", "Mine ➤ Silver", "#eeaa44"],
+        ["mine", "platinum", "Mine ➤ Platinum", "#eeaa44"],
+        ["mine", "limestone", "Mine ➤ Limestone", "#eeaa44"],
+        ["mine", "coal", "Mine ➤ Coal", "#eeaa44"],
+        ["mine", "gravel", "Mine ➤ Gravel", "#eeaa44"],
+        ["mine", "sand", "Mine ➤ Sand", "#eeaa44"],
+        ["mine", "bauxite", "Mine ➤ Bauxite", "#eeaa44"],
+        ["mine", "lithium", "Mine ➤ Lithium", "#eeaa44"],
+        ["mine", "uranium", "Mine ➤ Uranium", "#eeaa44"],
+        ["mine", "potash", "Mine ➤ Potash", "#eeaa44"],
+        ["mine", "sulfur", "Mine ➤ Sulfur", "#eeaa44"],
+        ["mine", "salt", "Mine ➤ Salt", "#eeaa44"],
+        ["mine", "iron", "Mine ➤ Iron", "#eeaa44"],
+        ["mine", "coltan", "Mine ➤ Coltan", "#eeaa44"],
+        ["refinery", "oil", "Refinery ➤ Oil", "#9999aa"],
+        ["refinery", "metal", "Refinery ➤ Metal", "#9999aa"],
+        ["refinery", "other", "Refinery ➤ Other", "#9999aa"],
+    ]
+
     class FacilityDescription(BaseModel):
         class EnergyType(str, Enum):
             LOWER_VOLTAGE = "electricity:voltage:lower"
@@ -168,6 +203,27 @@ class FacilityObservation(Observation):
         factory: Optional[FactoryType | list[FactoryType]]
         mine: Optional[MineType | list[MineType]]
         refinery: Optional[RefineryType | list[RefineryType]]
+
+    PROCESS_DATA = [
+        ["Extraction", "Surface Mining", "Open Pit"],
+        ["Extraction", "Surface Mining", "Strip"],
+        ["Extraction", "Underground Mining", "Shaft"],
+        ["Extraction", "Underground Mining", "Drift"],
+        ["Extraction", "Underground Mining", "Slope"],
+        ["Reaction", "Chloralkali"],
+        ["Reaction", "Calcination"],
+        ["Reaction", "Smelting"],
+        ["Reaction", "Bayer"],
+        ["Reaction", "Hall-Heroult"],
+        ["Reaction", "Distillation"],
+        ["Reaction", "Brewing"],
+        ["Reaction", "Electroplating"],
+        ["Reaction", "Electrowinning"],
+        ["Reaction", "Electropolishing"],
+        ["Reaction", "Anodizing"],
+        ["Reaction", "Electrolysis"],
+
+    ]
 
     class Process(str, Enum):
         OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
@@ -287,6 +343,7 @@ class ObservationWrapper(BaseModel, extra=Extra.forbid, title="Observation"):
     observed_at: datetime
     submitted_at: datetime
     location: Location
+    # location: str
     payload: SomeObservation | list[SomeObservation]
 
 
