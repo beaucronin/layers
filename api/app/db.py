@@ -1,3 +1,4 @@
+import os
 import databases
 from sqlalchemy import (
     create_engine,
@@ -14,7 +15,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
 
-DATABASE_URL = "postgresql://beau:49tgUizVNqyDCqLrpAkerB8t@host.structourist.com/layers"
+DATABASE_URL = os.getenv("DB_CREDS")
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
