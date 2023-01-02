@@ -112,15 +112,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 async def observations(observation: ObservationWrapper, token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
 
-    if isinstance(observation.payload, dict):
-        count = 1
-    elif isinstance(observation.payload, list):
+    if isinstance(observation.payload, list):
         count = len(observation.payload)
     else:
-        raise HTTPException(
-            status_code=400, detail="Payload must be a dict or list")
+        count = 1
 
-    print("here") 
     async with db.transaction():
         query = insert(ObservationEvents).values(
             # user_id=user.username,
@@ -131,21 +127,17 @@ async def observations(observation: ObservationWrapper, token: str = Depends(oau
             location=observation.location.dict(),
             observation_count=count,
         )
-        logging.error(query)
         result = await db.execute(query)
-        logging.error(result)
         event_id = result
         p = observation.payload
-        if isinstance(p, dict):
+        if not isinstance(p, list):
             p = [p]
-        else:
-            assert(isinstance(p, list))
-        q: list = p
-        for pld in q:
+
+        for pld in p:
             query = insert(Observations).values(
                 event_id=event_id,
                 observation_type=pld.observation_type,
-                payload=pld.dict()
+                payload=pld.dict(exclude_unset=True)
             )
             result = await db.execute(query)
     
