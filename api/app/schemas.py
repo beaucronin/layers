@@ -132,100 +132,40 @@ class TransportObservation(Observation):
 class FacilityObservation(Observation):
     """An observation of a facility"""
 
-    FD_DATA = [
-        ["energy", "electricity:voltage:lower", "Electricity ➤ Lower Voltage", "#4455ee"],        
-        ["energy", "electricity:voltage:raise", "Electricity ➤ Raise Voltage", "#4455ee"],        
-        ["energy", "electricity:generate", "Electricity ➤ Generate", "#4455ee"],        
-        ["energy", "electricity:store", "Electricity ➤ Store", "#4455ee"],        
-        ["energy", "electricity:condition", "Electricity ➤ Condition", "#4455ee"],
-        ["factory", "textile", "Factory ➤ Textile", "#ee5544"],
-        ["factory", "equipment", "Factory ➤ Equipment", "#ee5544"],
-        ["factory", "food", "Factory ➤ Food", "#ee5544"],
-        ["factory", "material", "Factory ➤ Material", "#ee5544"],
-        ["mine", "gold", "Mine ➤ Gold", "#eeaa44"],
-        ["mine", "silver", "Mine ➤ Silver", "#eeaa44"],
-        ["mine", "platinum", "Mine ➤ Platinum", "#eeaa44"],
-        ["mine", "limestone", "Mine ➤ Limestone", "#eeaa44"],
-        ["mine", "coal", "Mine ➤ Coal", "#eeaa44"],
-        ["mine", "gravel", "Mine ➤ Gravel", "#eeaa44"],
-        ["mine", "sand", "Mine ➤ Sand", "#eeaa44"],
-        ["mine", "bauxite", "Mine ➤ Bauxite", "#eeaa44"],
-        ["mine", "lithium", "Mine ➤ Lithium", "#eeaa44"],
-        ["mine", "uranium", "Mine ➤ Uranium", "#eeaa44"],
-        ["mine", "potash", "Mine ➤ Potash", "#eeaa44"],
-        ["mine", "sulfur", "Mine ➤ Sulfur", "#eeaa44"],
-        ["mine", "salt", "Mine ➤ Salt", "#eeaa44"],
-        ["mine", "iron", "Mine ➤ Iron", "#eeaa44"],
-        ["mine", "coltan", "Mine ➤ Coltan", "#eeaa44"],
-        ["refinery", "oil", "Refinery ➤ Oil", "#9999aa"],
-        ["refinery", "metal", "Refinery ➤ Metal", "#9999aa"],
-        ["refinery", "other", "Refinery ➤ Other", "#9999aa"],
-    ]
+    class FacilityFunction(str, Enum):
+        LOWER_VOLTAGE = "energy:electricity:voltage:lower"
+        RAISE_VOLTAGE = "energy:electricity:voltage:raise"
+        GENERATE_ELECTRICITY = "energy:electricity:generate"
+        STORE_ELECTRICITY = "energy:electricity:store"
+        CONDITION_ELECTRICITY = "energy:electricity:condition"
 
-    class FacilityDescription(BaseModel):
-        class EnergyType(str, Enum):
-            LOWER_VOLTAGE = "electricity:voltage:lower"
-            RAISE_VOLTAGE = "electricity:voltage:raise"
-            GENERATE_ELECTRICITY = "electricity:generate"
-            STORE_ELECTRICITY = "electricity:store"
-            CONDITION_ELECTRICITY = "electricity:condition"
+        TEXTILE = "factory:textile"
+        EQUIPMENT = "factory:equipment"
+        FOOD = "factory:food"
+        MATERIAL = "factory:material"
 
-        class FactoryType(str, Enum):
-            TEXTILE = "textile"
-            EQUIPMENT = "equipment"
-            FOOD = "food"
-            MATERIAL = "material"
+        GOLD = "mine:gold"
+        SILVER = "mine:silver"
+        PLATINUM = "mine:platinum"
+        LIMESTONE = "mine:limestone"
+        COAL = "mine:coal"
+        GRAVEL = "mine:gravel"
+        SAND = "mine:sand"
+        BAUXITE = "mine:bauxite"
+        LITHIUM = "mine:lithium"
+        URANIUM = "mine:uranium"
+        POTASH = "mine:potash"
+        SULFUR = "mine:sulfur"
+        SALT = "mine:salt"
+        RARE_EARTH = "mine:rare_earth"
+        IRON = "mine:iron"
+        COLTAN = "mine:coltan"
 
-        class MineType(str, Enum):
-            GOLD = "gold"
-            SILVER = "silver"
-            PLATINUM = "platinum"
-            LIMESTONE = "limestone"
-            COAL = "coal"
-            GRAVEL = "gravel"
-            SAND = "sand"
-            BAUXITE = "bauxite"
-            LITHIUM = "lithium"
-            URANIUM = "uranium"
-            POTASH = "potash"
-            SULFUR = "sulfur"
-            SALT = "salt"
-            RARE_EARTH = "rare_earth"
-            IRON = "iron"
-            COLTAN = "coltan"
+        PETROLEUM = "refinery:petroleum"
+        METAL = "refinery:metal"
+        OTHER = "refinery:other"
 
-        class RefineryType(str, Enum):
-            PETROLEUM = "petroleum"
-            METAL = "metal"
-            OTHER = "other"
-
-        energy: Optional[EnergyType | list[EnergyType]]
-        factory: Optional[FactoryType | list[FactoryType]]
-        mine: Optional[MineType | list[MineType]]
-        refinery: Optional[RefineryType | list[RefineryType]]
-
-    PROCESS_DATA = [
-        ["Extraction", "Surface Mining", "Open Pit"],
-        ["Extraction", "Surface Mining", "Strip"],
-        ["Extraction", "Underground Mining", "Shaft"],
-        ["Extraction", "Underground Mining", "Drift"],
-        ["Extraction", "Underground Mining", "Slope"],
-        ["Reaction", "Chloralkali"],
-        ["Reaction", "Calcination"],
-        ["Reaction", "Smelting"],
-        ["Reaction", "Bayer"],
-        ["Reaction", "Hall-Heroult"],
-        ["Reaction", "Distillation"],
-        ["Reaction", "Brewing"],
-        ["Reaction", "Electroplating"],
-        ["Reaction", "Electrowinning"],
-        ["Reaction", "Electropolishing"],
-        ["Reaction", "Anodizing"],
-        ["Reaction", "Electrolysis"],
-
-    ]
-
-    class Process(str, Enum):
+    class FacilityProcess(str, Enum):
         OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
         STRIP_MINING = "extraction:surface_mining:strip"
         SHAFT_MINING = "extraction:underground_mining:shaft"
@@ -274,8 +214,8 @@ class FacilityObservation(Observation):
 
     observation_type: Literal['facility']
     description: str
-    facility_description: FacilityDescription
-    processes: Optional[Process | list[Process]]
+    functions: Optional[FacilityFunction | list[FacilityFunction]]
+    processes: Optional[FacilityProcess | list[FacilityProcess]]
 
 class Shape(BaseModel):
     pass
