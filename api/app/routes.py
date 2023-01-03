@@ -6,10 +6,10 @@ from sqlalchemy import select, insert
 from jose import JWTError
 
 from .auth import authenticate_user, create_access_token, username_from_token, get_user, get_password_hash, user_from_token
-from .schemas import ObservationWrapper
+from .schemas import ObservationWrapper, FacilityObservation
 from .db import db, Users, ObservationEvents, Observations
 from .models import UserCreate, Token
-
+from .util import enum_to_dict
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
@@ -38,6 +38,22 @@ async def root(token: str = Depends(oauth2_scheme)):
         return {"msg": "hello, authenticated world", "user": user.username}
     else:
         raise credentials_exception
+
+
+@app.get("/meta/facility-functions")
+async def facility_functions(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(FacilityObservation.FacilityFunction, alpha=True)
+
+
+@app.get("/meta/facility-processes")
+async def facility_processes(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(FacilityObservation.FacilityProcess, alpha=True)
 
 
 @app.get("/users/me")
