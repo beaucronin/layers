@@ -1,0 +1,1 @@
+This directory contains the Layers REST API, which is implemented as a [FastAPI](https://fastapi.tiangolo.com/) app.
