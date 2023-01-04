@@ -153,6 +153,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 @app.post("/observations", responses={201: {"description": "Observation created"}, 400: {"description": "Invalid payload"}}, status_code=201)
 async def observations(observation: ObservationWrapper, token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     if isinstance(observation.payload, list):
         count = len(observation.payload)
