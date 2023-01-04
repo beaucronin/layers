@@ -133,8 +133,8 @@ class FacilityObservation(Observation):
     """An observation of a facility"""
 
     class FacilityFunction(str, Enum):
-        LOWER_VOLTAGE = "energy:electricity:voltage:lower"
-        RAISE_VOLTAGE = "energy:electricity:voltage:raise"
+        LOWER_ELECTRICITY_VOLTAGE = "energy:electricity:voltage:lower"
+        RAISE_ELECTRICITY_VOLTAGE = "energy:electricity:voltage:raise"
         GENERATE_ELECTRICITY = "energy:electricity:generate"
         STORE_ELECTRICITY = "energy:electricity:store"
         CONDITION_ELECTRICITY = "energy:electricity:condition"

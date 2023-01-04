@@ -6,7 +6,7 @@ from sqlalchemy import select, insert
 from jose import JWTError
 
 from .auth import authenticate_user, create_access_token, username_from_token, get_user, get_password_hash, user_from_token
-from .schemas import ObservationWrapper, FacilityObservation
+from .schemas import ObservationWrapper, FacilityObservation, TransportObservation, AssetObservation, ResourceObservation, ExtentObservation
 from .db import db, Users, ObservationEvents, Observations
 from .models import UserCreate, Token
 from .util import enum_to_dict
@@ -54,6 +54,32 @@ async def facility_processes(token: str = Depends(oauth2_scheme)):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return enum_to_dict(FacilityObservation.FacilityProcess, alpha=True)
+
+
+@app.get("/meta/asset-types")
+async def asset_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    out = enum_to_dict(AssetObservation.ContainerType, alpha=True)
+    out.update(enum_to_dict(AssetObservation.VehicleType, alpha=True))
+    return out
+
+
+@app.get("/meta/asset-configurations")
+async def asset_configurations(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(AssetObservation.AssetConfiguration, alpha=True)
+
+
+@app.get("/meta/transport-modes")
+async def transport_modes(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(TransportObservation.TransportMode, alpha=True)
 
 
 @app.get("/users/me")
