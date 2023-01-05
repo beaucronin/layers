@@ -33,5 +33,4 @@ def extract_place_info(url):
         lng = None
     
     # Return the place info as a dictionary
-    return {'name': name, 'latitude': lat, 'longitude': lng}
-    
+    return {'description': name, 'latitude': lat, 'longitude': lng}
