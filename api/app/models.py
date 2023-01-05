@@ -1,4 +1,6 @@
+from typing import Optional
 from pydantic import BaseModel
+from .schemas import Location
 
 class User(BaseModel):
     username: str
@@ -25,3 +27,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class InterpretationRequest(BaseModel):
+    input: str
+
+
+class Interpretation(BaseModel):
+    input: str
+    location: Optional[Location]
+    description: Optional[str]

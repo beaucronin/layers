@@ -11,8 +11,8 @@ from pydantic import BaseModel, Extra
 
 class LatLongLocation(BaseModel):
     """A location, specified by a longitude and latitude as floats"""
-    longitude: str
-    latitude: str
+    longitude: str | float
+    latitude: str | float
 
 
 class GeohashLocation(BaseModel):
