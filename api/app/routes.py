@@ -4,8 +4,23 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert
 from urllib.parse import urlparse
 
-from .auth import authenticate_user, create_access_token, username_from_token, get_user, get_password_hash, user_from_token
-from .schemas import ObservationWrapper, FacilityObservation, TransportObservation, AssetObservation, ResourceObservation, ExtentObservation
+from .auth import (
+    authenticate_user,
+    create_access_token,
+    username_from_token,
+    get_user,
+    get_password_hash,
+    user_from_token,
+)
+from .schemas import (
+    ObservationWrapper,
+    FacilityObservation,
+    TransportObservation,
+    AssetObservation,
+    LatLongLocation,
+    ResourceObservation,
+    ExtentObservation,
+)
 from .db import db, Users, ObservationEvents, Observations
 from .models import UserCreate, Token, Interpretation, InterpretationRequest
 from .util import enum_to_dict, extract_place_info
@@ -89,7 +104,7 @@ async def user_info(token: str = Depends(oauth2_scheme)):
         return user.dict()
 
 
-@app.post("/users", status_code=201) 
+@app.post("/users", status_code=201)
 async def create_user(user: UserCreate):
     # check if user exists
     username = user.username
@@ -102,13 +117,16 @@ async def create_user(user: UserCreate):
     password = user.password
     if len(password) < 8:
         raise HTTPException(
-            status_code=400, detail="Password must be at least 8 characters")
+            status_code=400, detail="Password must be at least 8 characters"
+        )
     if password.isalpha():
         raise HTTPException(
-            status_code=400, detail="Password must contain at least one number")
+            status_code=400, detail="Password must contain at least one number"
+        )
     if password.isnumeric():
         raise HTTPException(
-            status_code=400, detail="Password must contain at least one letter")
+            status_code=400, detail="Password must contain at least one letter"
+        )
 
     # check if email exists
     email = user.email
@@ -129,7 +147,7 @@ async def create_user(user: UserCreate):
         password=hashed_password,
         is_active=True,
         created_at=datetime.now(),
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
     result = await db.execute(query)
 
@@ -146,11 +164,20 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(data={"sub": user.username})
 
     resp = {"access_token": access_token, "token_type": "bearer"}
-    return resp 
+    return resp
 
 
-@app.post("/observations", responses={201: {"description": "Observation created"}, 400: {"description": "Invalid payload"}}, status_code=201)
-async def observations(observation: ObservationWrapper, token: str = Depends(oauth2_scheme)):
+@app.post(
+    "/observations",
+    responses={
+        201: {"description": "Observation created"},
+        400: {"description": "Invalid payload"},
+    },
+    status_code=201,
+)
+async def observations(
+    observation: ObservationWrapper, token: str = Depends(oauth2_scheme)
+):
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -180,15 +207,17 @@ async def observations(observation: ObservationWrapper, token: str = Depends(oau
             query = insert(Observations).values(
                 event_id=event_id,
                 observation_type=pld.observation_type,
-                payload=pld.dict(exclude_unset=True)
+                payload=pld.dict(exclude_unset=True),
             )
             result = await db.execute(query)
-    
+
     return {"msg": "success"}
 
 
 @app.post("/interpretation", response_model=Interpretation)
-async def interpretation(req: InterpretationRequest, token: str = Depends(oauth2_scheme)):
+async def interpretation(
+    req: InterpretationRequest, token: str = Depends(oauth2_scheme)
+):
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -198,7 +227,11 @@ async def interpretation(req: InterpretationRequest, token: str = Depends(oauth2
         if text.find("google.com/maps/place") > -1:
             result = extract_place_info(text)
             if result:
-                return Interpretation(input=text, description=result["description"], location=result["location"])
+                return Interpretation(
+                    input=text,
+                    description=result["description"],
+                    location=LatLongLocation(latitude=result["latitude"], longitude=result["longitude"])
+                )
         else:
             raise HTTPException(status_code=404, detail="Interpretation not found")
 
