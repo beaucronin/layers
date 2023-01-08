@@ -22,7 +22,7 @@ def extract_place_info(url):
     path_components = path.split('/')
     
     # Extract the place name and latitude and longitude from the path components
-    name = urllib.parse.unquote(path_components[3]).replace('+', ' ')
+    name = bc.title(urllib.parse.unquote(path_components[3]).replace('+', ' '))
     lat_lng_string = path_components[4]
     lat_lng_match = re.search(r'@?([\d.-]+),([\d.-]+)', lat_lng_string)
     if lat_lng_match:
