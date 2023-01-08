@@ -171,6 +171,9 @@ class FacilityObservation(Observation):
 
         DRAYAGE = "logistics:drayage"
         DISTRIBUTION = "logistics:distribution"
+        FOOD_DISTRIBUTION = "logistics:distribution:food"
+        MEDICAL_DISTRIBUTION = "logistics:distribution:medical"
+        BEVERAGE_DISTRIBUTION = "logistics:distribution:beverage"
         WAREHOUSING = "logistics:warehousing"
         
         METAL_RECYCLING = "recycling:metal"
@@ -204,6 +207,7 @@ class FacilityObservation(Observation):
         ELECTROLYSIS = "reaction:electrolysis"
         ELECTROREFINING = "reaction:electrorefining"
         ELECTRODEPOSITION = "reaction:electrodeposition"
+        GALVANIZING = "reaction:galvanizing"
 
         PACKING = "packing"
         BOXING = "packing:boxing"
