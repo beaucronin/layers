@@ -165,6 +165,10 @@ class FacilityObservation(Observation):
         METAL = "refinery:metal"
         OTHER = "refinery:other"
 
+        WATER_TREATMENT = "water:treatment"
+        WATER_STORAGE = "water:storage"
+        WATER_DESALINATION = "water:desalination"
+
     class FacilityProcess(str, Enum):
         OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
         STRIP_MINING = "extraction:surface_mining:strip"
