@@ -235,6 +235,8 @@ class FacilityObservation(Observation):
         SLA = "fabrication:additive:sla"
         WELDING = "fabrication:welding"
         PAINTING = "fabrication:painting"
+        COATING = "fabrication:coating"
+        POWDER_COATING = "fabrication:coating:powder"        
         ASSEMBLY = "fabrication:assembly"
         CASTING = "fabrication:casting"
         FORGING = "fabrication:forging"
