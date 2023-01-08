@@ -143,6 +143,26 @@ class FacilityObservation(Observation):
         EQUIPMENT = "factory:equipment"
         FOOD = "factory:food"
         MATERIAL = "factory:material"
+        FACTORY = "factory:unspecified"
+
+        AUTO_REPAIR = "repair:automotive"
+        ELECTRONIC_REPAIR = "repair:electronic"
+        EQUIPMENT_REPAIR = "repair:equipment"
+        APPLIANCE_REPAIR = "repair:appliance"
+        REPAIR = "repair:unspecified"
+
+        RETAIL = "retail:unspecified"
+        FOOD_RETAIL = "retail:food"
+        AUTO_RETAIL = "retail:automotive"
+        ELECTRONIC_RETAIL = "retail:electronic"
+        EQUIPMENT_RETAIL = "retail:equipment"
+        APPLIANCE_RETAIL = "retail:appliance"
+        HOME_RETAIL = "retail:home"
+        CLOTHING_RETAIL = "retail:clothing"
+        FURNITURE_RETAIL = "retail:furniture"
+        ENTERTAINMENT_RETAIL = "retail:entertainment"
+        DINING = "retail:dining"
+        
 
         GOLD = "mine:gold"
         SILVER = "mine:silver"
@@ -271,6 +291,24 @@ class FacilityObservation(Observation):
         NET_FISHING = "agriculture:fishing:net"
         TRAWLING = "agriculture:fishing:trawling"
         OTHER_FISHING = "agriculture:fishing:other"
+
+        SOLAR_PV = "energy:generation:solar_pv"
+        SOLAR_THERMAL = "energy:generation:solar_thermal"
+        WIND = "energy:generation:wind_turbine"
+        HYDRO = "energy:generation:water_turbine"
+        GEOTHERMAL = "energy:generation:geothermal"
+        BIOGAS = "energy:generation:biogas"
+        BIODIESEL = "energy:generation:biodiesel"
+        BIOETHANOL = "energy:generation:bioethanol"
+        BIOMASS = "energy:generation:biomass"
+        NUCLEAR_FISSION = "energy:generation:nuclear_fission"
+        NUCLEAR_FUSION = "energy:generation:nuclear_fusion"
+        COAL = "energy:generation:thermal:coal_combustion"
+        NATURAL_GAS = "energy:generation:thermal:natural_gas_combustion"
+        OIL = "energy:generation:thermal:oil_combustion"
+        WOOD = "energy:generation:thermal:wood_combustion"
+        STEAM = "energy:transformation:steam_engine"
+        OTHER_FUEL = "energy:generation:thermal:other"
 
 
 
