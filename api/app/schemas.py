@@ -169,6 +169,11 @@ class FacilityObservation(Observation):
         WATER_STORAGE = "water:storage"
         WATER_DESALINATION = "water:desalination"
 
+        DRAYAGE = "logistics:drayage"
+        DISTRIBUTION = "logistics:distribution"
+        WAREHOUSING = "logistics:warehousing"
+        
+
     class FacilityProcess(str, Enum):
         OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
         STRIP_MINING = "extraction:surface_mining:strip"
