@@ -229,6 +229,7 @@ async def interpretation(
             if result:
                 return Interpretation(
                     input=text,
+                    type="facility",
                     description=result["description"],
                     location=LatLongLocation(latitude=result["latitude"], longitude=result["longitude"])
                 )

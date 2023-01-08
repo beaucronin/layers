@@ -35,5 +35,6 @@ class InterpretationRequest(BaseModel):
 
 class Interpretation(BaseModel):
     input: str
+    type: str
     location: Optional[Location]
     description: Optional[str]
