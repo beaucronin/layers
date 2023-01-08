@@ -195,6 +195,7 @@ class FacilityObservation(Observation):
         MEDICAL_DISTRIBUTION = "logistics:distribution:medical"
         BEVERAGE_DISTRIBUTION = "logistics:distribution:beverage"
         WAREHOUSING = "logistics:warehousing"
+        HAULING = "logistics:hauling"
         
         METAL_RECYCLING = "recycling:metal"
         PLASTIC_RECYCLING = "recycling:plastic"
