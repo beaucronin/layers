@@ -162,7 +162,7 @@ class FacilityObservation(Observation):
         COLTAN = "mine:coltan"
 
         PETROLEUM = "refinery:petroleum"
-        METAL = "refinery:metal"
+        METAL = "refinery:metal"        
         OTHER = "refinery:other"
 
         WATER_TREATMENT = "water:treatment"
@@ -173,6 +173,13 @@ class FacilityObservation(Observation):
         DISTRIBUTION = "logistics:distribution"
         WAREHOUSING = "logistics:warehousing"
         
+        METAL_RECYCLING = "recycling:metal"
+        PLASTIC_RECYCLING = "recycling:plastic"
+        PAPER_RECYCLING = "recycling:paper"
+        GLASS_RECYCLING = "recycling:glass"
+        TEXTILE_RECYCLING = "recycling:textile"
+        ELECTRONIC_RECYCLING = "recycling:electronic"
+        OTHER_RECYCLING = "recycling:other"
 
     class FacilityProcess(str, Enum):
         OPEN_PIT_MINING = "extraction:surface_mining:open_pit"
@@ -195,10 +202,30 @@ class FacilityObservation(Observation):
         ELECTROPOLISHING = "reaction:electropolishing"
         ANODIZING = "reaction:anodizing"
         ELECTROLYSIS = "reaction:electrolysis"
+        ELECTROREFINING = "reaction:electrorefining"
+        ELECTRODEPOSITION = "reaction:electrodeposition"
+
+        PACKING = "packing"
+        BOXING = "packing:boxing"
+        BOTTLE_FILLING = "packing:bottle_filling"
+
+        REFRIGERATING = "climate_control:cooling:refrigerating"
+        FREEZING = "climate_control:cooling:freezing"
+        HEATING = "climate_control:heating"
+        COOLING = "climate_control:cooling"
+        DEHUMIDIFYING = "climate_control:dehumidifying"
+        HUMIDIFYING = "climate_control:humidifying"
 
         MACHINING = "fabrication:machining"
         CNC = "fabrication:machining:cnc"
         CUTTING = "fabrication:machining:cutting"
+        PLASMA_CUTTING = "fabrication:machining:cutting:plasma"
+        LASER_CUTTING = "fabrication:machining:cutting:laser"
+        WATERJET_CUTTING = "fabrication:machining:cutting:waterjet"
+        GRINDING = "fabrication:machining:grinding"
+        DRILLING = "fabrication:machining:drilling"
+        MILLING = "fabrication:machining:milling"
+        TURNING = "fabrication:machining:turning"
         FDM = "fabrication:additive:fdm"
         SLS = "fabrication:additive:sls"
         SLA = "fabrication:additive:sla"
@@ -210,6 +237,21 @@ class FacilityObservation(Observation):
         INJECTION_MOLDING = "fabrication:injection_molding"
         FABRICATION = "fabrication:various"
 
+        SHREDDING = "disassembly:shredding"
+        METAL_SHREDDING = "disassembly:shredding:metal"
+        PAPER_SHREDDING = "disassembly:shredding:paper"
+
+        BULK_HANDLING = "handling:bulk"
+        CONVEYOR_BELT = "handling:bulk:conveyor_belt"
+        BUCKET_ELEVATOR = "handling:bulk:bucket_elevator"
+        SCREW_CONVEYOR = "handling:bulk:screw_conveyor"
+        VIBRATING_CONVEYOR = "handling:bulk:vibrating_conveyor"
+        PNEUMATIC_CONVEYOR = "handling:bulk:pneumatic_conveyor"
+        AERIAL_CONVEYOR = "handling:bulk:aerial_conveyor"
+        DRAG_CHAIN_CONVEYOR = "handling:bulk:drag_chain_conveyor"
+        FLUIDIZED_CONVEYOR = "handling:bulk:fluidized_conveyor"
+        OTHER_CONVEYOR = "handling:bulk:other"
+
         GINNING = "textile:ginning"
         CARDING = "textile:carding"
         COMBING = "textile:combing"
@@ -217,9 +259,14 @@ class FacilityObservation(Observation):
         WINDING = "textile:winding"
         WARPING = "textile:warping"
         WEAVING = "textile:weaving"
+        FINISHING = "textile:finishing"
 
-        WASTEWATER_TREATMENT = "water:treatment"
-        DESALINATION = "water:desalination"
+        LINE_FISHING = "agriculture:fishing:line"
+        NET_FISHING = "agriculture:fishing:net"
+        TRAWLING = "agriculture:fishing:trawling"
+        OTHER_FISHING = "agriculture:fishing:other"
+
+
 
     observation_type: Literal['facility']
     description: str
