@@ -170,6 +170,17 @@ class FacilityObservation(Observation):
         FURNITURE_RETAIL = "retail:furniture"
         ENTERTAINMENT_RETAIL = "retail:entertainment"
         DINING = "retail:dining"
+
+        WHOLESALE = "wholesale:unspecified"
+        FOOD_WHOLESALE = "wholesale:food"
+        METAL_WHOLESALE = "wholesale:metal"
+        PLASTIC_WHOLESALE = "wholesale:plastic"
+        EQUIPMENT_WHOLESALE = "wholesale:equipment"
+        ELECTRICAL_WHOLESALE = "wholesale:electrical"
+        GLASS_WHOLESALE = "wholesale:glass"
+        WOOD_WHOLESALE = "wholesale:wood"
+        BUILDING_MATERIALS_WHOLESALE = "wholesale:building_materials"
+        TEXTILE_WHOLESALE = "wholesale:textile"
         
 
         GOLD = "mine:gold"
@@ -203,7 +214,16 @@ class FacilityObservation(Observation):
         MEDICAL_DISTRIBUTION = "logistics:distribution:medical"
         BEVERAGE_DISTRIBUTION = "logistics:distribution:beverage"
         WAREHOUSING = "logistics:warehousing"
-        HAULING = "logistics:hauling"        
+        HAULING = "logistics:hauling"
+
+        STORAGE = "storage:unspecified"
+        WASTE_STORAGE = "storage:waste"
+        PERSONAL_STORAGE = "storage:personal"
+        VEHICLE_STORAGE = "storage:vehicle"
+
+        WASTE_DISPOSAL = "waste:disposal"
+        WASTE_TREATMENT = "waste:treatment"
+        SOLID_WASTE_TRANSFER = "waste:transfer"
         
         METAL_RECYCLING = "recycling:metal"
         PLASTIC_RECYCLING = "recycling:plastic"
