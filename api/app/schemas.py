@@ -351,7 +351,7 @@ class AgricultureObservation(Observation):
     """An observation of an agricultural activity -- e.g. a field of crops, a greenhouse, aquaculture, tree plantation etc."""
 
     class AgricultureType(str, Enum):
-        CROP = "agriculture"
+        CROP = "crop"
         FORESTRY = "forestry"
         ANIMAL_HUSBANDRY = "animal_husbandry"
 
