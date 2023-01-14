@@ -3,7 +3,7 @@ from typing import Optional, Literal
 from enum import Enum
 from datetime import datetime
 from pydantic import BaseModel, Extra
-
+from geojson_pydantic import FeatureCollection, Feature, Point
 
 # Observations
 
@@ -346,21 +346,16 @@ class FacilityObservation(Observation):
     functions: Optional[FacilityFunction | list[FacilityFunction]]
     processes: Optional[FacilityProcess | list[FacilityProcess]]
 
-class Shape(BaseModel):
-    pass
 
-class CultivationObservation(Observation):
-    """An observation of a cultivation"""
+class AgricultureObservation(Observation):
+    """An observation of an agricultural activity -- e.g. a field of crops, a greenhouse, aquaculture, tree plantation etc."""
 
-    class CultivationType(str, Enum):
-        AGRICULTURE = "agriculture"
+    class AgricultureType(str, Enum):
+        CROP = "agriculture"
         FORESTRY = "forestry"
-        AQUACULTURE = "aquaculture"
-        PASTURE = "pasture"
-        FEEDLOT = "feedlot"
-        OTHER = "other"
+        ANIMAL_HUSBANDRY = "animal_husbandry"
 
-    class CROP_TYPE(str, Enum):
+    class CropType(str, Enum):
         CEREAL = "cereal[1]"
         WHEAT = "cereal:wheat[11]"
         MAIZE = "cereal:maize[12]"
@@ -428,9 +423,25 @@ class CultivationObservation(Observation):
         TOBACCO = "tobacco[96]"
         OTHER_CROPS = "other_crops[99]"
 
+    class LiveStockType(str, Enum):
+        CATTLE = "cattle"
+        SHEEP = "sheep"
+        GOATS = "goats"
+        SWINE = "swine"
+        POULTRY = "poultry"
+        CHICKENS = "poultry:chickens"
+        TURKEYS = "poultry:turkeys"
+        OTHER_POULTRY = "poultry:other"
+        HORSES = "horses"
+        OTHER_LIVESTOCK = "other_livestock"
+    
+    class TreeType(str, Enum):
+        pass
 
+    agriculture_type: AgricultureType
+    product: CropType | LiveStockType | TreeType
+    shape: Optional[FeatureCollection]
 
-    cultivation_type: CultivationType
 
 class ResourceObservation(Observation):
     """An observation of a natural resource"""
@@ -468,13 +479,57 @@ class ResourceObservation(Observation):
     description: str
     resource_id: ResourceId
     amount: Amount
-    shape: Optional[Shape]
+    shape: Optional[FeatureCollection]
 
 
 class ExtentObservation(Observation):
-    """An observation of a human-defined bounary or area"""
+    """An observation of a human-defined boundary or area"""
 
-    shape: Optional[Shape]
+    class BoundaryType(str, Enum):
+        SURVEYED_BOUNDARY = "surveyed_boundary"
+        NATURAL_BOUNDARY = "natural_boundary"
+        AGRICULTURE_BOUNDARY = "agriculture_boundary"
+        BUILT_BOUNDARY = "built_boundary"
+        ADMINISTRATIVE_BOUNDARY = "administrative_boundary"
+        OTHER_BOUNDARY = "other_boundary"
+
+    class LandUseType(str, Enum):
+        OPEN_WATER = "water[11]"
+        RIVER = "water:river[111]"
+        LAKE = "water:lake[112]"
+        RESERVOIR_POND = "water:reservoir_pond[113]"
+        BEACH = "water:beach[114]"
+        SHOAL = "water:shoal[115]"
+        PERMANENT_SNOW_ICE = "permanent_snow_ice[12]"
+        DEVELOPED_OPEN_SPACE = "developed:open_space[21]"
+        PARK_REC_AREA = "developed:open_space:park_rec_area[211]"
+        PAVED = "developed:open_space:paved[212]"
+        DEVELOPED_LOW_INTENSITY = "developed:low_intensity[22]"
+        DEVELOPED_MEDIUM_INTENSITY = "developed:medium_intensity[23]"
+        DEVELOPED_HIGH_INTENSITY = "developed:high_intensity[24]"
+        BARREN_LAND = "barren_land[31]"
+        SAND = "barren_land:sand[311]"
+        ROCK = "barren_land:rock[312]"
+        DECIDUOUS_FOREST = "forest:deciduous[41]"
+        EVERGREEN_FOREST = "forest:evergreen[42]"
+        MIXED_FOREST = "forest:mixed[43]"
+        SHRUB_SCRUB = "shrub_scrub[52]"
+        GRASSLAND_HERBACEOUS = "herbaceous:grassland[71]"
+        SEDGE_HERBACEOUS = "herbaceous:sedge[72]"
+        LICHENS = "herbaceouslichens[73]"
+        MOSS = "herbaceous:moss[74]"
+        PASTURE_HAY = "agriculture:pasture_hay[81]"
+        CULTIVATED_CROPS = "agriculture:cultivated_crops[82]"
+        WOODED_WETLANDS = "wetlands:wooded[90]"
+        HERBACEOUS_WETLANDS = "wetlands:herbaceous[95]"
+        OTHER = "other[99]"
+
+    observation_type: Literal['extent']
+    description: Optional[str]
+    extent_id: Optional[str]
+    boundary_type: Optional[BoundaryType]
+    landuse_type: LandUseType
+    shape: FeatureCollection
 
 
 class SourceType(str, Enum):
@@ -485,7 +540,7 @@ class SourceType(str, Enum):
     OTHER = "other"
 
 
-SomeObservation = AssetObservation | TransportObservation | FacilityObservation
+SomeObservation = AssetObservation | TransportObservation | FacilityObservation | ResourceObservation | ExtentObservation
 
 
 class ObservationWrapper(BaseModel, extra=Extra.forbid, title="Observation"):
