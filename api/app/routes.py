@@ -105,7 +105,7 @@ async def agriculture_types(token: str = Depends(oauth2_scheme)):
     return enum_to_dict(AgricultureObservation.AgricultureType, alpha=True)
 
 
-@app.get("/meta/crop-types")
+@app.get("/meta/agriculture-crop-types")
 async def crop_types(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
@@ -113,7 +113,7 @@ async def crop_types(token: str = Depends(oauth2_scheme)):
     return enum_to_dict(AgricultureObservation.CropType, alpha=True)
 
 
-@app.get("/meta/livestock-types")
+@app.get("/meta/agriculture-livestock-types")
 async def livestock_types(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
@@ -121,7 +121,7 @@ async def livestock_types(token: str = Depends(oauth2_scheme)):
     return enum_to_dict(AgricultureObservation.LiveStockType, alpha=True)
 
 
-@app.get("/meta/boundary-types")
+@app.get("/meta/extent-boundary-types")
 async def boundary_types(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
@@ -129,7 +129,7 @@ async def boundary_types(token: str = Depends(oauth2_scheme)):
     return enum_to_dict(ExtentObservation.BoundaryType, alpha=True)
 
 
-@app.get("/meta/landuse-types")
+@app.get("/meta/extent-land-use-types")
 async def landuse_types(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
