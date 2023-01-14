@@ -20,6 +20,7 @@ from .schemas import (
     LatLongLocation,
     ResourceObservation,
     ExtentObservation,
+    AgricultureObservation
 )
 from .db import db, Users, ObservationEvents, Observations
 from .models import UserCreate, Token, Interpretation, InterpretationRequest
@@ -94,6 +95,46 @@ async def transport_modes(token: str = Depends(oauth2_scheme)):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return enum_to_dict(TransportObservation.TransportMode, alpha=True)
+
+
+@app.get("/meta/agriculture-types")
+async def agriculture_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(AgricultureObservation.AgricultureType, alpha=True)
+
+
+@app.get("/meta/crop-types")
+async def crop_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(AgricultureObservation.CropType, alpha=True)
+
+
+@app.get("/meta/livestock-types")
+async def livestock_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(AgricultureObservation.LiveStockType, alpha=True)
+
+
+@app.get("/meta/boundary-types")
+async def boundary_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(ExtentObservation.BoundaryType, alpha=True)
+
+
+@app.get("/meta/landuse-types")
+async def landuse_types(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return enum_to_dict(ExtentObservation.LandUseType, alpha=True)
 
 
 @app.get("/users/me")
