@@ -57,7 +57,7 @@ class Observations(Base):
     __tablename__ = "observations"
     id = Column(Integer, primary_key=True)
     event_id = Column(Integer, ForeignKey("observation_events.id"))
-    observation_type = Column(Enum("asset", "facility", "resource", "transport", name="observation_type"))
+    observation_type = Column(Enum("asset", "facility", "resource", "transport", "extent", "", name="observation_type"))
     payload = Column(JSONB)
 
     class Config:

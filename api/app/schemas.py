@@ -45,6 +45,7 @@ class Observation(BaseModel, extra=Extra.forbid):
     """The abstract base model for an observation, which may optionally contain a payload reference"""
 
     payload_ref: Optional[str | int]
+    shape: Optional[FeatureCollection]
 
 
 class AssetObservation(Observation):
@@ -73,6 +74,38 @@ class AssetObservation(Observation):
         TANK_TRAILER = "container:trailer:tank"
         METAL_TANK = "container:tank:metal"
         PLASTIC_TANK = "container:tank:plastic"
+    
+    class TowerType(str, Enum):
+        """The enum of valid tower types for AssetObservations"""
+        WOOD_POLE = "pole:wood"
+        METAL_POLE = "pole:metal"
+
+        METAL_TOWER = "tower:metal"
+        CELL_TOWER = "tower:cell"
+        WATER_TOWER = "tower:water"
+        POWER_TOWER = "tower:power"
+        TELEPHONE_TOWER = "tower:telephone"
+        LIGHT_TOWER = "tower:light"
+        FIBER_TOWER = "tower:fiber"
+    
+    class EquipmentType(str, Enum):
+        GENERATOR = "equipment:generator"
+        TRANSFORMER = "equipment:transformer"
+        AIR_CONDITIONER = "equipment:air_conditioner"
+        HEATER = "equipment:heater"
+        AIR_COMPRESSOR = "equipment:air_compressor"
+        BLOWER = "equipment:blower"
+        FAN = "equipment:fan"
+        DEHUMIDIFIER = "equipment:dehumidifier"
+        DRYER = "equipment:dryer"
+        HUMIDIFIER = "equipment:humidifier"
+        MIXER = "equipment:mixer"
+        REFRIGERATOR = "equipment:refrigerator"
+        WATER_HEATER = "equipment:water_heater"
+        BOILER = "equipment:boiler"
+        MOTOR = "equipment:motor"
+        PUMP = "equipment:pump"
+        OVEN = "equipment:oven"
 
     class AssetId(BaseModel):
         """A fragment describing an Asset ID"""
@@ -438,9 +471,9 @@ class AgricultureObservation(Observation):
     class TreeType(str, Enum):
         pass
 
+    observation_type: Literal["agriculture"]
     agriculture_type: AgricultureType
     product: CropType | LiveStockType | TreeType
-    shape: Optional[FeatureCollection]
 
 
 class ResourceObservation(Observation):
@@ -479,7 +512,6 @@ class ResourceObservation(Observation):
     description: str
     resource_id: ResourceId
     amount: Amount
-    shape: Optional[FeatureCollection]
 
 
 class ExtentObservation(Observation):
@@ -529,7 +561,6 @@ class ExtentObservation(Observation):
     extent_id: Optional[str]
     boundary_type: Optional[BoundaryType]
     landuse_type: LandUseType
-    shape: FeatureCollection
 
 
 class SourceType(str, Enum):
@@ -543,14 +574,13 @@ class SourceType(str, Enum):
 SomeObservation = AssetObservation | TransportObservation | FacilityObservation | ResourceObservation | ExtentObservation
 
 
-class ObservationWrapper(BaseModel, extra=Extra.forbid, title="Observation"):
+class ObservationEvent(BaseModel, extra=Extra.forbid, title="Observation"):
     """NOTE: This schema is automatically generated and should not be modified here"""
     observer: str
     source: SourceType
     observed_at: datetime
     submitted_at: datetime
     location: Location
-    # location: str
     payload: SomeObservation | list[SomeObservation]
 
 
@@ -558,7 +588,7 @@ def main():
     """Generates the json schemas and places them in the ./schemas/ folder"""
 
     with open(f"schemas/observation_schema.json", "w") as fd:
-        fd.write(ObservationWrapper.schema_json(indent=2))
+        fd.write(ObservationEvent.schema_json(indent=2))
 
 
 if __name__ == "__main__":

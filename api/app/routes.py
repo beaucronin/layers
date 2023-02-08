@@ -13,7 +13,7 @@ from .auth import (
     user_from_token,
 )
 from .schemas import (
-    ObservationWrapper,
+    ObservationEvent,
     FacilityObservation,
     TransportObservation,
     AssetObservation,
@@ -217,7 +217,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     status_code=201,
 )
 async def observations(
-    observation: ObservationWrapper, token: str = Depends(oauth2_scheme)
+    observation: ObservationEvent, token: str = Depends(oauth2_scheme)
 ):
     user = await user_from_token(token, db)
     if not user:
@@ -245,6 +245,7 @@ async def observations(
             p = [p]
 
         for pld in p:
+            
             query = insert(Observations).values(
                 event_id=event_id,
                 observation_type=pld.observation_type,
