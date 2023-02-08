@@ -111,8 +111,12 @@ class AssetObservation(Observation):
         """A fragment describing an Asset ID"""
 
         class IDType(str, Enum):
-            US_LICENSE = "plate:united_states"
+            US_LICENSE = "license_plate:united_states"
+            EU_LICENSE = "license_plate:eu"
+            UK_LICENSE = "license_plate:uk"
             BIC = "BIC"
+            ASSET_TAG = "asset_tag"
+            VIN = "VIN"
 
         id_type: IDType
         id_text: str
@@ -134,7 +138,7 @@ class AssetObservation(Observation):
         MOVING_AIRBORNE = "moving:airborne"
 
     observation_type: Literal['asset']
-    asset_type: VehicleType | ContainerType | Literal["asset:generic"]
+    asset_type: VehicleType | ContainerType | TowerType | Literal["asset:generic"]
     asset_id: AssetId | list[AssetId]
     configuration: Optional[AssetConfiguration]
 
