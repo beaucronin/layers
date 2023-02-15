@@ -67,15 +67,30 @@ async def user_from_token(token: str, user_db) -> Optional[UserInDB]:
         username = username_from_token(token)
         print(username)
     except JWTError:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,   
+            detail="Could not get username",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     if not username:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,   
+            detail="username is none",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     try:
         user = await get_user(user_db, username)
         print(user)
     except:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,   
+            detail="Could not get user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
     
     if not user:
         raise credentials_exception
