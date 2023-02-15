@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm,
 from sqlalchemy import select, insert
 from urllib.parse import urlparse
 
@@ -222,7 +222,20 @@ async def observations(
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
+    return _observations(observation)
 
+@app.post(
+    "/observations-open",
+    responses={
+        201: {"description": "Observation created"},
+        400: {"description": "Invalid payload"},
+    },
+    status_code=201,
+)
+async def observations_open(observation: ObservationEvent):
+    return _observations(observation)
+
+def _observations(observation: ObservationEvent):
     if isinstance(observation.payload, list):
         count = len(observation.payload)
     else:
