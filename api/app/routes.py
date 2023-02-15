@@ -222,7 +222,7 @@ async def observations(
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return _observations(observation)
+    return await _observations(observation)
 
 @app.post(
     "/observations-open",
@@ -233,7 +233,7 @@ async def observations(
     status_code=201,
 )
 async def observations_open(observation: ObservationEvent):
-    return _observations(observation)
+    return await _observations(observation)
 
 async def _observations(observation: ObservationEvent):
     if isinstance(observation.payload, list):
