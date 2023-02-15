@@ -235,7 +235,7 @@ async def observations(
 async def observations_open(observation: ObservationEvent):
     return _observations(observation)
 
-def _observations(observation: ObservationEvent):
+async def _observations(observation: ObservationEvent):
     if isinstance(observation.payload, list):
         count = len(observation.payload)
     else:
