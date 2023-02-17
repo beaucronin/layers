@@ -46,6 +46,7 @@ class Observation(BaseModel, extra=Extra.forbid):
 
     payload_ref: Optional[str | int]
     shape: Optional[FeatureCollection]
+    props: Optional[dict[str, str]]
 
 
 class AssetObservation(Observation):
