@@ -119,13 +119,14 @@ class AssetObservation(Observation):
             VIN = "VIN"
 
         id_type: IDType
-        id_text: str
+        id_text: Optional[str]
 
     class AssetConfiguration(str, Enum):
         FREE_STANDING = "open:free_standing"
         STACKED = "open:stacked"
         PAD_MOUNTED = "mounted:pad"
         TRAILER_MOUNTED = "mounted:trailer"
+        TRAINCAR_MOUNTED = "mounted:traincar"
         POLE_MOUNTED = "mounted:pole"
         TOWER_MOUNTED = "mounted:tower"
         SHELF_MOUNTED = "mounted:shelf"
@@ -138,8 +139,8 @@ class AssetObservation(Observation):
         MOVING_AIRBORNE = "moving:airborne"
 
     observation_type: Literal['asset']
-    asset_type: VehicleType | ContainerType | TowerType | Literal["asset:generic"]
-    asset_id: AssetId | list[AssetId]
+    asset_type: VehicleType | ContainerType | TowerType | EquipmentType | Literal["asset:generic"]
+    asset_id: Optional[AssetId | list[AssetId]]
     configuration: Optional[AssetConfiguration]
 
 
