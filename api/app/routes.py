@@ -145,6 +145,26 @@ async def user_info(token: str = Depends(oauth2_scheme)):
         return user.dict()
 
 
+@app.get("/users/me2")
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        username = username_from_token(token)
+        if username is None:
+            raise credentials_exception
+    except Exception as exc:
+        raise credentials_exception from exc
+    user = get_user(db, username=username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+
 @app.post("/users", status_code=201)
 async def create_user(user: UserCreate):
     # check if user exists
@@ -293,21 +313,3 @@ async def interpretation(
 
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Invalid input: {exc}") from exc
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        username = username_from_token(token)
-        if username is None:
-            raise credentials_exception
-    except Exception as exc:
-        raise credentials_exception from exc
-    user = get_user(db, username=username)
-    if user is None:
-        raise credentials_exception
-    return user
