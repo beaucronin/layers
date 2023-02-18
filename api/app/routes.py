@@ -148,11 +148,18 @@ async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_sche
 
     # ensure username is not changed
     setattr(updated_user, "username", user.username)
-    return updated_user.dict()
 
-    query = update(Users).where(Users.username == user.username).values(**updated_user.dict())
+    # remove None values
+    d = updated_user.dict()
+    for k, v in d.items():
+        if v is None:
+            del d[k]
+
+    # update user
+    query = update(Users).where(Users.username == user.username).values(**d)
     await db.execute(query)
 
+    # return updated user
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
