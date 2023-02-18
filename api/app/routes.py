@@ -16,10 +16,17 @@ from .schemas import (
     AssetObservation,
     LatLongLocation,
     ExtentObservation,
-    AgricultureObservation
+    AgricultureObservation,
 )
 from .db import db, Users, ObservationEvents, Observations
-from .models import UserCreate, Token, Interpretation, InterpretationRequest, UserUpdate
+from .models import (
+    UserCreate,
+    Token,
+    Interpretation,
+    InterpretationRequest,
+    UserUpdate,
+    UserStats,
+)
 from .util import enum_to_dict, extract_place_info
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -140,6 +147,7 @@ async def user_info(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user.dict()
 
+
 @app.patch("/users/me")
 async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
@@ -164,6 +172,32 @@ async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_sche
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user.dict()
+
+
+@app.get("/users/me/stats")
+async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStats:
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    query = select(ObservationEvents).where(
+        ObservationEvents.observer == user.username
+        or ObservationEvents.observer == user.email
+    )
+    result = await db.fetch_all(query)
+    last_observation: datetime | None = None
+    obs_count = 0
+    for row in result:
+        if (not last_observation) | row["observed_at"] > last_observation:
+            last_observation = row["observed_at"]
+        obs_count += row["observation_count"]
+
+    stats = UserStats(
+        username=user.username,
+        last_observation=last_observation.isoformat() if last_observation else None,
+        observation_count_alltime=obs_count
+    )
+    return stats
 
 
 @app.post("/users", status_code=201)
@@ -245,6 +279,7 @@ async def observations(
         raise HTTPException(status_code=401, detail="Not authenticated")
     return await _observations(observation)
 
+
 @app.post(
     "/observations-open",
     responses={
@@ -255,6 +290,7 @@ async def observations(
 )
 async def observations_open(observation: ObservationEvent):
     return await _observations(observation)
+
 
 async def _observations(observation: ObservationEvent):
     if isinstance(observation.payload, list):
@@ -279,7 +315,7 @@ async def _observations(observation: ObservationEvent):
             p = [p]
 
         for pld in p:
-            
+
             query = insert(Observations).values(
                 event_id=event_id,
                 observation_type=pld.observation_type,
@@ -307,7 +343,9 @@ async def interpretation(
                     input=text,
                     type="facility",
                     description=result["description"],
-                    location=LatLongLocation(latitude=result["latitude"], longitude=result["longitude"])
+                    location=LatLongLocation(
+                        latitude=result["latitude"], longitude=result["longitude"]
+                    ),
                 )
         else:
             raise HTTPException(status_code=404, detail="Interpretation not found")

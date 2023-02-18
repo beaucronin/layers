@@ -45,3 +45,9 @@ class Interpretation(BaseModel):
     type: str
     location: Optional[Location]
     description: Optional[str]
+
+
+class UserStats(BaseModel):
+    username: str
+    observation_count_alltime: int = 0
+    last_observation: str | None
