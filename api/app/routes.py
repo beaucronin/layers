@@ -139,10 +139,10 @@ async def landuse_types(token: str = Depends(oauth2_scheme)):
 
 @app.get("/users/me")
 async def user_info(token: str = Depends(oauth2_scheme)):
-    username = username_from_token(token)
-    if username:
-        user = await get_user(db, username)
-        return user.dict()
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user.dict()
 
 
 @app.get("/users/me2")
