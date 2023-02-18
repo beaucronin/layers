@@ -151,7 +151,7 @@ async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_sche
 
     # remove None values
     d = updated_user.dict()
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if v is None:
             del d[k]
 
