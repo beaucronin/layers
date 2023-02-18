@@ -16,6 +16,13 @@ class UserCreate(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    username: str
+    email: str | None = None
+    fullname: str | None = None
+    disabled: bool | None = None
+
+
 class UserInDB(User):
     password: str
 

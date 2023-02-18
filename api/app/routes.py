@@ -1,14 +1,11 @@
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy import select, insert
-from urllib.parse import urlparse
+from sqlalchemy import select, insert, update
 
 from .auth import (
     authenticate_user,
     create_access_token,
-    username_from_token,
-    get_user,
     get_password_hash,
     user_from_token,
 )
@@ -18,12 +15,11 @@ from .schemas import (
     TransportObservation,
     AssetObservation,
     LatLongLocation,
-    ResourceObservation,
     ExtentObservation,
     AgricultureObservation
 )
 from .db import db, Users, ObservationEvents, Observations
-from .models import UserCreate, Token, Interpretation, InterpretationRequest
+from .models import UserCreate, Token, Interpretation, InterpretationRequest, UserUpdate
 from .util import enum_to_dict, extract_place_info
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -144,25 +140,19 @@ async def user_info(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user.dict()
 
+@app.patch("/users/me")
+async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
-@app.get("/users/me2")
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        username = username_from_token(token)
-        if username is None:
-            raise credentials_exception
-    except Exception as exc:
-        raise credentials_exception from exc
-    user = await get_user(db, username=username)
-    if user is None:
-        raise credentials_exception
-    return user
+    for key, value in updated_user.dict().items():
+        if value is not None:
+            setattr(user, key, value)
 
+    query = update(Users).where(Users.username == user.username).values(**user.dict())
+    await db.execute(query)
+    return user.dict()
 
 
 @app.post("/users", status_code=201)
