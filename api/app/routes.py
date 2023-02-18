@@ -188,7 +188,7 @@ async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStats:
     last_observation: datetime | None = None
     obs_count = 0
     for row in result:
-        if (not last_observation) | row["observed_at"] > last_observation:
+        if (not last_observation) or row["observed_at"] > last_observation:
             last_observation = row["observed_at"]
         obs_count += row["observation_count"]
 
