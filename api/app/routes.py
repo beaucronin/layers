@@ -158,7 +158,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except Exception as exc:
         raise credentials_exception from exc
-    user = get_user(db, username=username)
+    user = await get_user(db, username=username)
     if user is None:
         raise credentials_exception
     return user
