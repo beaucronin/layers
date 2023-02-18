@@ -18,9 +18,9 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     username: str
-    email: str | None = None
-    fullname: str | None = None
-    disabled: bool | None = None
+    email: Optional[str]
+    fullname: Optional[str]
+    disabled: Optional[str]
 
 
 class UserInDB(User):

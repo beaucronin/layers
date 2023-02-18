@@ -19,7 +19,7 @@ from .schemas import (
     AgricultureObservation
 )
 from .db import db, Users, ObservationEvents, Observations
-from .models import UserCreate, Token, Interpretation, InterpretationRequest, User
+from .models import UserCreate, Token, Interpretation, InterpretationRequest, UserUpdate
 from .util import enum_to_dict, extract_place_info
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -141,14 +141,14 @@ async def user_info(token: str = Depends(oauth2_scheme)):
     return user.dict()
 
 @app.patch("/users/me")
-async def update_user(updated_user: User, token: str = Depends(oauth2_scheme)):
+async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     # ensure username is not changed
     setattr(updated_user, "username", user.username)
-    return updated_user.dict()
+    # return updated_user.dict()
 
     query = update(Users).where(Users.username == user.username).values(**updated_user.dict())
     await db.execute(query)
