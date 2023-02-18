@@ -92,6 +92,11 @@ class AssetObservation(Observation):
     class EquipmentType(str, Enum):
         GENERATOR = "equipment:generator"
         TRANSFORMER = "equipment:transformer"
+        VOLTAGE_REGULATOR = "equipment:voltage_regulator"
+        CAPACITOR = "equipment:capacitor"
+        RECLOSER = "equipment:recloser"
+        SWITCH = "equipment:switch"
+
         AIR_CONDITIONER = "equipment:air_conditioner"
         HEATER = "equipment:heater"
         AIR_COMPRESSOR = "equipment:air_compressor"
@@ -100,14 +105,17 @@ class AssetObservation(Observation):
         DEHUMIDIFIER = "equipment:dehumidifier"
         DRYER = "equipment:dryer"
         HUMIDIFIER = "equipment:humidifier"
+        
         MIXER = "equipment:mixer"
+        
         REFRIGERATOR = "equipment:refrigerator"
         WATER_HEATER = "equipment:water_heater"
         BOILER = "equipment:boiler"
-        MOTOR = "equipment:motor"
-        PUMP = "equipment:pump"
         OVEN = "equipment:oven"
 
+        MOTOR = "equipment:motor"
+        PUMP = "equipment:pump"
+        
     class AssetId(BaseModel):
         """A fragment describing an Asset ID"""
 
@@ -567,6 +575,50 @@ class ExtentObservation(Observation):
     extent_id: Optional[str]
     boundary_type: Optional[BoundaryType]
     landuse_type: LandUseType
+
+
+class ConnectionObservation(Observation):
+    """An observation of a connection between two assets"""
+
+    class ConnectionType(str, Enum):
+        CONDUCTOR = "conductor"
+        ALUMINUM_CONDUCTOR = "conductor:aluminum"
+        COPPER_CONDUCTOR = "conductor:copper"
+        
+        PIPE = "pipe"
+        COPPER_PIPE = "pipe:copper"
+        PVC_PIPE = "pipe:pvc"
+        STEEL_PIPE = "pipe:steel"
+        IRON_PIPE = "pipe:iron"
+        ABS_PIPE = "pipe:abs"
+        PEX_PIPE = "pipe:pex"
+        CONCRETE_PIPE = "pipe:concrete"
+        ORANGEBURG_PIPE = "pipe:orangeburg"
+        CLAY_PIPE = "pipe:clay"
+
+        CONDUIT = "conduit"
+        PVC_CONDUIT = "conduit:pvc"
+        STEEL_CONDUIT = "conduit:steel"
+        
+        CANAL = "canal"
+        EARTHEN_CANAL = "canal:earthen"
+        CONCRETE_CANAL = "canal:concrete"
+        DITCH = "ditch"
+        
+        OTHER = "other"
+    
+    class ConnectionFunction(str, Enum):
+        ELECTRICITY_TRANSMISSION = "electricity:transmission"
+        ELECTRICITY_DISTRIBUTION = "electricity:distribution"
+        PRIMARY_DISTRIBUTION = "electricity:distribution:primary"
+        SECONDARY_DISTRIBUTION = "electricity:distribution:secondary"
+        IRRIGATION = "water:irrigation"
+        WATER_DISTRIBUTION = "water:distribution"
+        SEWAGE = "water:sewage"
+
+    observation_type: Literal['connection']
+    connection_type: ConnectionType
+    connection_function: ConnectionFunction
 
 
 class SourceType(str, Enum):
