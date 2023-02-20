@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert, update
+from geoalchemy2 import Geometry
 
 from .auth import (
     authenticate_user,
@@ -18,16 +19,16 @@ from .schemas import (
     ExtentObservation,
     AgricultureObservation,
 )
-from .db import db, Users, ObservationEvents, Observations
+from .db import db, Users, ObservationEvents, Observations, UserStats as UserStatsDB
 from .models import (
     UserCreate,
     Token,
     Interpretation,
     InterpretationRequest,
     UserUpdate,
-    UserStats,
+    UserStats as UserStatsModel,
 )
-from .util import enum_to_dict, extract_place_info
+from .util import enum_to_dict, extract_place_info, format_as_native, format_as_geojson
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
@@ -175,28 +176,51 @@ async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_sche
 
 
 @app.get("/users/me/stats")
-async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStats:
+async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStatsModel:
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    return await get_user_stats(user)
+
+
+async def get_user_stats(user: User, max_age: int = 0) -> UserStatsModel:
+    latest_stats: UserStatsModel | None = await get_latest_user_stats(user)
+    if latest_stats:
+        
+        return latest_stats
+    else:
+        return await compute_user_stats(user)
+
+
+async def get_latest_user_stats(user: User) -> UserStatsModel | None:
+    """Get the latest user stats from the database, or None if the user's stats have never been calculated ."""
+    query = (
+        select(UserStatsDB)
+        .where(UserStatsDB.username == user.username)
+        .order_by(UserStatsDB.created_at.desc())
+        .limit(1)
+    )
+    result = await db.fetch_one(query)
+    if result:
+        stats = UserStatsModel(**result)
+        return stats
+    else:
+        return None
+
+
+async def compute_user_stats(user: User) -> UserStatsModel:
+    """Compute the user's stats, save them to the database, and return them."""
     query = select(ObservationEvents).where(
         ObservationEvents.observer == user.username
         or ObservationEvents.observer == user.email
     )
     result = await db.fetch_all(query)
-    last_observation: datetime | None = None
-    obs_count = 0
-    for row in result:
-        if (not last_observation) or row["observed_at"] > last_observation:
-            last_observation = row["observed_at"]
-        obs_count += row["observation_count"]
 
-    stats = UserStats(
-        username=user.username,
-        last_observation=last_observation.isoformat() if last_observation else None,
-        observation_count_alltime=obs_count
-    )
+    ins = insert(UserStatsDB).values()
+    await db.execute(ins)
+
+    stats = UserStatsModel()
     return stats
 
 
@@ -299,6 +323,10 @@ async def _observations(observation: ObservationEvent):
         count = 1
 
     async with db.transaction():
+        geo = None
+        if isinstance(observation.location, LatLongLocation):
+            loc = observation.location
+            geo = f'POINT({loc.longitude} {loc.latitude})'
         query = insert(ObservationEvents).values(
             # user_id=user.username,
             observer=observation.observer,
@@ -307,6 +335,7 @@ async def _observations(observation: ObservationEvent):
             submitted_at=observation.submitted_at,
             location=observation.location.dict(),
             observation_count=count,
+            geo=geo
         )
         result = await db.execute(query)
         event_id = result
@@ -324,6 +353,23 @@ async def _observations(observation: ObservationEvent):
             result = await db.execute(query)
 
     return {"msg": "success"}
+
+@app.get("/observations")
+async def get_observations(format: str = "native", token: str = Depends(oauth2_scheme)):
+    """Get the observations for the current user, within a certain area, optionally of a certain type."""
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    query = select(ObservationEvents).where(ObservationEvents.observer == user.username)
+    result = await db.fetch_all(query)
+
+    if format == "native":
+        return format_as_native(result)
+    elif format == "geojson":
+        return format_as_geojson(result)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format")
 
 
 @app.post("/interpretation", response_model=Interpretation)

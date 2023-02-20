@@ -1,5 +1,5 @@
-python-multipart
-passlib
+python-multipart==0.0.5
+passlib==1.7.4
 anyio==3.6.2
 asyncpg==0.27.0
 basket-case==0.1.4
@@ -9,7 +9,8 @@ cryptography==38.0.4
 databases==0.7.0
 ecdsa==0.18.0
 fastapi==0.88.0
-geojson-pydantic
+GeoAlchemy2==0.13.1
+geojson-pydantic==0.5.0
 psycopg2-binary==2.9.5
 pydantic==1.10.2
 python-jose==3.3.0

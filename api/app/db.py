@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-
+from geoalchemy2 import Geometry
 
 DATABASE_URL = os.getenv("DB_CREDS")
 
@@ -37,6 +37,23 @@ class Users(Base):
         orm_mode = True
 
 
+class UserStats(Base):
+    __tablename__ = "user_stats"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True))
+    counts_alltime = Column(JSONB)
+    counts_1day = Column(JSONB)
+    counts_7days = Column(JSONB)
+    counts_30days = Column(JSONB)
+    counts_90days = Column(JSONB)
+    counts_365days = Column(JSONB)
+    last_observation = Column(DateTime)
+
+    class Config:
+        orm_mode = True
+
+
 class ObservationEvents(Base):
     __tablename__ = "observation_events"
     id = Column(Integer, primary_key=True)
@@ -48,6 +65,7 @@ class ObservationEvents(Base):
     submitted_at = Column(DateTime)
     location = Column(JSONB)
     observation_count = Column(Integer)
+    geo = Column(Geometry(geometry_type="POINT", srid=4326))
 
     class Config:
         orm_mode = True

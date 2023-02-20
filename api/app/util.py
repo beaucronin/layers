@@ -1,6 +1,7 @@
 import urllib.parse
 import re
 import basket_case as bc
+import geojson_pydantic as gp
 
 
 def enum_to_dict(enum, alpha=False):
@@ -48,3 +49,14 @@ def extract_place_info(url):
     
     # Return the place info as a dictionary
     return {'description': name, 'latitude': lat, 'longitude': lng}
+
+
+def format_as_native(result):
+    pass
+
+def format_as_geojson(result):
+    # extract geojson features from each row in the result, and add them to a FeatureCollection
+    features = []
+    for row in result:
+        features.append(gp.Feature(geometry=gp.Point(coordinates=[row['longitude'], row['latitude']]), properties=row))
+    return gp.FeatureCollection(features=features)

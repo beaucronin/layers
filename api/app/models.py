@@ -48,6 +48,19 @@ class Interpretation(BaseModel):
 
 
 class UserStats(BaseModel):
+    class Counts(BaseModel):
+        assets: int
+        facilities: int
+        resources: int
+        transports: int
+        extents: int
+
     username: str
-    observation_count_alltime: int = 0
-    last_observation: str | None
+    created_at: str
+    counts_alltime: Counts
+    counts_1day: Counts
+    counts_7days: Counts
+    counts_30days: Counts   
+    counts_90days: Counts
+    counts_365days: Counts
+    last_observation: str
