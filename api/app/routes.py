@@ -21,6 +21,7 @@ from .schemas import (
 )
 from .db import db, Users, ObservationEvents, Observations, UserStats as UserStatsDB
 from .models import (
+    User,
     UserCreate,
     Token,
     Interpretation,
@@ -175,53 +176,53 @@ async def update_user(updated_user: UserUpdate, token: str = Depends(oauth2_sche
     return user.dict()
 
 
-@app.get("/users/me/stats")
-async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStatsModel:
-    user = await user_from_token(token, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+# @app.get("/users/me/stats")
+# async def user_stats(token: str = Depends(oauth2_scheme)) -> UserStatsModel:
+#     user = await user_from_token(token, db)
+#     if not user:
+#         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    return await get_user_stats(user)
-
-
-async def get_user_stats(user: User, max_age: int = 0) -> UserStatsModel:
-    latest_stats: UserStatsModel | None = await get_latest_user_stats(user)
-    if latest_stats:
-        
-        return latest_stats
-    else:
-        return await compute_user_stats(user)
+#     return await get_user_stats(user)
 
 
-async def get_latest_user_stats(user: User) -> UserStatsModel | None:
-    """Get the latest user stats from the database, or None if the user's stats have never been calculated ."""
-    query = (
-        select(UserStatsDB)
-        .where(UserStatsDB.username == user.username)
-        .order_by(UserStatsDB.created_at.desc())
-        .limit(1)
-    )
-    result = await db.fetch_one(query)
-    if result:
-        stats = UserStatsModel(**result)
-        return stats
-    else:
-        return None
+# async def get_user_stats(user: User, max_age: int = 0) -> UserStatsModel:
+#     latest_stats: UserStatsModel | None = await get_latest_user_stats(user)
+#     if latest_stats:
+#         return latest_stats
+#     else:
+#         return await compute_user_stats(user)
 
 
-async def compute_user_stats(user: User) -> UserStatsModel:
-    """Compute the user's stats, save them to the database, and return them."""
-    query = select(ObservationEvents).where(
-        ObservationEvents.observer == user.username
-        or ObservationEvents.observer == user.email
-    )
-    result = await db.fetch_all(query)
+# async def get_latest_user_stats(user: User) -> UserStatsModel | None:
+#     """Get the latest user stats from the database, or None if the user's stats have never been calculated ."""
+#     query = (
+#         select(UserStatsDB)
+#         .where(UserStatsDB.username == user.username)
+#         .order_by(UserStatsDB.created_at.desc())
+#         .limit(1)
+#     )
+#     result = await db.fetch_one(query)
+#     if result:
+#         return None
+#         # stats = UserStatsModel(**result)
+#         # return stats
+#     else:
+#         return None
 
-    ins = insert(UserStatsDB).values()
-    await db.execute(ins)
 
-    stats = UserStatsModel()
-    return stats
+# async def compute_user_stats(user: User) -> UserStatsModel:
+#     """Compute the user's stats, save them to the database, and return them."""
+#     query = select(ObservationEvents).where(
+#         ObservationEvents.observer == user.username
+#         or ObservationEvents.observer == user.email
+#     )
+#     result = await db.fetch_all(query)
+
+#     ins = insert(UserStatsDB).values()
+#     await db.execute(ins)
+
+#     stats = UserStatsModel()
+#     return stats
 
 
 @app.post("/users", status_code=201)
@@ -327,6 +328,9 @@ async def _observations(observation: ObservationEvent):
         if isinstance(observation.location, LatLongLocation):
             loc = observation.location
             geo = f'POINT({loc.longitude} {loc.latitude})'
+        else:
+            raise NotImplementedError("Only LatLongLocation is supported at the moment")
+        
         query = insert(ObservationEvents).values(
             # user_id=user.username,
             observer=observation.observer,
