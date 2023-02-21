@@ -162,7 +162,7 @@ async def create_transaction(
         select(Accounts).filter(Accounts.username == to_username)
     )
 
-    if from_account.amount < amount:
+    if from_account.balance < amount:
         # insufficient funds
         raise Exception("Insufficient funds")
 
