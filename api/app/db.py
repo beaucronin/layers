@@ -58,6 +58,7 @@ class ObservationEvents(Base):
     __tablename__ = "observation_events"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    username = Column(String(50))
     # the observer, as contained in the body of the observation; this should match the logged in user
     observer = Column(String(50))
     source = Column(String(50))
@@ -77,6 +78,35 @@ class Observations(Base):
     event_id = Column(Integer, ForeignKey("observation_events.id"))
     observation_type = Column(Enum("asset", "facility", "resource", "transport", "extent", "", name="observation_type"))
     payload = Column(JSONB)
+
+    class Config:
+        orm_mode = True
+
+
+class Entries(Base):
+    """A ledger of all transactions between users."""
+    __tablename__ = "entries"
+    id = Column(Integer, primary_key=True)
+    from_account_id = Column(Integer, ForeignKey("accounts.id"))
+    to_account_id = Column(Integer, ForeignKey("accounts.id"))
+    from_username = Column(String(50))
+    to_username = Column(String(50))
+    amount = Column(Integer)
+    created_at = Column(DateTime(timezone=True))
+    txtype = Column(String(50))
+    txdata = Column(JSONB)
+
+    class Config:
+        orm_mode = True
+
+
+class Accounts(Base):
+    __tablename__ = "accounts"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50))
+    balance = Column(Integer)
+    created_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True))
 
     class Config:
         orm_mode = True
