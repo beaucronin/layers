@@ -121,7 +121,7 @@ class Entries(Base):
 
 
 class Accounts(Base):
-    # __tablename__ = "accounts"
+    __tablename__ = "accounts"
     id = Column(Integer, primary_key=True)
     username = Column(String(50))
     balance = Column(Integer)
