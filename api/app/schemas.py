@@ -641,6 +641,12 @@ class ObservationEvent(BaseModel, extra=Extra.forbid, title="Observation"):
     location: Location
     payload: SomeObservation | list[SomeObservation]
 
+    def num_observations(self) -> int:
+        if isinstance(self.payload, list):
+            return len(self.payload)
+        else:
+            return 1
+
 
 def main():
     """Generates the json schemas and places them in the ./schemas/ folder"""

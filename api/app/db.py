@@ -1,6 +1,10 @@
 import os
 import databases
+from datetime import datetime
 from sqlalchemy import (
+    select,
+    insert,
+    update,
     create_engine,
     MetaData,
     Column,
@@ -9,16 +13,19 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     ForeignKey,
-    Enum
+    Enum,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
+from .util import level_for_xp
 
 DATABASE_URL = os.getenv("DB_CREDS")
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
+engine = create_engine(DATABASE_URL)
+db = databases.Database(DATABASE_URL)
 
 
 class Users(Base):
@@ -27,11 +34,13 @@ class Users(Base):
     username = Column(String(100))
     password = Column(String(150))
     email = Column(String(100))
-    is_active = Column(Boolean)
     fullname = Column(String(50))
     created_at = Column(DateTime(timezone=True))
     updated_at = Column(DateTime(timezone=True))
     active_at = Column(DateTime)
+    disabled = Column(Boolean)
+    xp = Column(Integer)
+    level = Column(Integer)
 
     class Config:
         orm_mode = True
@@ -76,7 +85,17 @@ class Observations(Base):
     __tablename__ = "observations"
     id = Column(Integer, primary_key=True)
     event_id = Column(Integer, ForeignKey("observation_events.id"))
-    observation_type = Column(Enum("asset", "facility", "resource", "transport", "extent", "", name="observation_type"))
+    observation_type = Column(
+        Enum(
+            "asset",
+            "facility",
+            "resource",
+            "transport",
+            "extent",
+            "",
+            name="observation_type",
+        )
+    )
     payload = Column(JSONB)
 
     class Config:
@@ -85,6 +104,7 @@ class Observations(Base):
 
 class Entries(Base):
     """A ledger of all transactions between users."""
+
     __tablename__ = "entries"
     id = Column(Integer, primary_key=True)
     from_account_id = Column(Integer, ForeignKey("accounts.id"))
@@ -101,7 +121,7 @@ class Entries(Base):
 
 
 class Accounts(Base):
-    __tablename__ = "accounts"
+    # __tablename__ = "accounts"
     id = Column(Integer, primary_key=True)
     username = Column(String(50))
     balance = Column(Integer)
@@ -112,8 +132,71 @@ class Accounts(Base):
         orm_mode = True
 
 
-engine = create_engine(DATABASE_URL)
-db = databases.Database(DATABASE_URL)
+class Rewards(Base):
+    __tablename__ = "rewards"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(50))
+    amount = Column(Integer)
+    created_at = Column(DateTime(timezone=True))
 
-metadata.create_all(engine)
 
+async def create_reward(username: str, amount: int):
+    """Create a reward for a user."""
+    reward = insert(Rewards).values(
+        username=username, amount=amount, created_at=datetime.now()
+    )
+    await db.execute(reward)
+
+
+async def create_transaction(
+    from_username: str, to_username: str, amount: int, txtype: str
+):
+    """Create a transaction. This requires inserting a new entry into the ledger, and updating the
+    balance of the from and to accounts."""
+
+    # For now, assume each user has a single account.
+    from_account = await db.fetch_one(
+        select(Accounts).filter(Accounts.username == from_username)
+    )
+    to_account = await db.fetch_one(
+        select(Accounts).filter(Accounts.username == to_username)
+    )
+
+    if from_account.amount < amount:
+        # insufficient funds
+        raise Exception("Insufficient funds")
+
+    entry = insert(Entries).values(
+        from_account_id=from_account.id,
+        to_account_id=to_account.id,
+        from_username=from_username,
+        to_username=to_username,
+        amount=amount,
+        created_at=datetime.now(),
+        txtype=txtype,
+    )
+    debit = (
+        update(Accounts)
+        .where(Accounts.id == from_account.id)
+        .values(balance=Accounts.balance - amount)
+    )
+    credit = (
+        update(Accounts)
+        .where(Accounts.id == to_account.id)
+        .values(balance=Accounts.balance + amount)
+    )
+    await db.execute(entry)
+    await db.execute(debit)
+    await db.execute(credit)
+
+
+async def maybe_increase_level(username) -> bool:
+    """Increase the level of a user if they have enough XP."""
+    user = await db.fetch_one(select(Users).filter(Users.username == username))
+    new_level = level_for_xp(user.xp)
+    if new_level > user.level:
+        await db.execute(
+            update(Users).where(Users.username == username).values(level=new_level)
+        )
+        return True
+    return False

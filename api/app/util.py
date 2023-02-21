@@ -2,7 +2,7 @@ import urllib.parse
 import re
 import basket_case as bc
 import geojson_pydantic as gp
-
+from .schemas import ObservationEvent
 
 def enum_to_dict(enum, alpha=False):
     """Convert an enum to a dict of title-cased keys and the corresponding values, optionally alphabetizing."""
@@ -60,3 +60,16 @@ def format_as_geojson(result):
     for row in result:
         features.append(gp.Feature(geometry=gp.Point(coordinates=[row['longitude'], row['latitude']]), properties=row))
     return gp.FeatureCollection(features=features)
+
+def compute_reward(observation_event: ObservationEvent) -> int:
+    """Compute the reward for an observation."""
+    return observation_event.num_observations() * 10
+
+LEVELS = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000]
+def level_for_xp(xp: int) -> int:
+    """Compute the level for a given amount of XP."""
+    for i, level_xp in enumerate(LEVELS):
+        if xp < level_xp:
+            return i
+    return len(LEVELS)
+    

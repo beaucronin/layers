@@ -1,8 +1,8 @@
+from typing import Optional
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy import select, insert, update
-from geoalchemy2 import Geometry
+from sqlalchemy import select, insert, update, func
 
 from .auth import (
     authenticate_user,
@@ -19,7 +19,16 @@ from .schemas import (
     ExtentObservation,
     AgricultureObservation,
 )
-from .db import db, Users, ObservationEvents, Observations, UserStats as UserStatsDB
+from .db import (
+    db,
+    Users,
+    ObservationEvents,
+    Observations,
+    UserStats as UserStatsDB,
+    create_transaction,
+    create_reward,
+    maybe_increase_level,
+)
 from .models import (
     User,
     UserCreate,
@@ -29,7 +38,13 @@ from .models import (
     UserUpdate,
     UserStats as UserStatsModel,
 )
-from .util import enum_to_dict, extract_place_info, format_as_native, format_as_geojson
+from .util import (
+    enum_to_dict,
+    extract_place_info,
+    format_as_native,
+    format_as_geojson,
+    compute_reward,
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
@@ -302,7 +317,7 @@ async def observations(
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return await _observations(observation)
+    return await _observations(observation, user=user)
 
 
 @app.post(
@@ -317,60 +332,90 @@ async def observations_open(observation: ObservationEvent):
     return await _observations(observation)
 
 
-async def _observations(observation: ObservationEvent):
-    if isinstance(observation.payload, list):
-        count = len(observation.payload)
+async def _observations(observation_event: ObservationEvent, user: User | None = None):
+    if isinstance(observation_event.payload, list):
+        count = len(observation_event.payload)
     else:
         count = 1
 
+    username = "beau"
+    if user:
+        username = user.username
+    
     async with db.transaction():
         geo = None
-        if isinstance(observation.location, LatLongLocation):
-            loc = observation.location
-            geo = f'POINT({loc.longitude} {loc.latitude})'
+        if isinstance(observation_event.location, LatLongLocation):
+            loc = observation_event.location
+            geo = f"POINT({loc.longitude} {loc.latitude})"
         else:
             raise NotImplementedError("Only LatLongLocation is supported at the moment")
-        
+
         query = insert(ObservationEvents).values(
             # user_id=user.username,
-            observer=observation.observer,
-            source=observation.source,
-            observed_at=observation.observed_at,
-            submitted_at=observation.submitted_at,
-            location=observation.location.dict(),
+            username=username,  
+            observer=observation_event.observer,
+            source=observation_event.source,
+            observed_at=observation_event.observed_at,
+            submitted_at=observation_event.submitted_at,
+            location=observation_event.location.dict(),
             observation_count=count,
-            geo=geo
+            geo=geo,
         )
         result = await db.execute(query)
         event_id = result
-        p = observation.payload
+        p = observation_event.payload
         if not isinstance(p, list):
             p = [p]
 
         for pld in p:
-
-            query = insert(Observations).values(
-                event_id=event_id,
-                observation_type=pld.observation_type,
-                payload=pld.dict(exclude_unset=True),
-            )
+            obs = {
+                "event_id": event_id,
+                "observation_type": pld.observation_type,
+                "payload": pld.dict(exclude_unset=True),
+            }
+            if "shape" in obs["payload"]:
+                shape = obs["payload"]["shape"]
+                obs["geo"] = func.ST_GeomFromGeoJSON(shape["features"][0]["geometry"])
+            query = insert(Observations).values(**obs)
             result = await db.execute(query)
+
+        reward = compute_reward(observation_event)
+
+        await create_reward(username, reward)
+        await create_transaction("house", username, reward, "observation")
+        await maybe_increase_level(username)
 
     return {"msg": "success"}
 
+
 @app.get("/observations")
-async def get_observations(format: str = "native", token: str = Depends(oauth2_scheme)):
+async def get_observations(
+    obs_type: Optional[str] = None,
+    fmt: str = "native",
+    max_age: int = 0,
+    token: str = Depends(oauth2_scheme),
+):
     """Get the observations for the current user, within a certain area, optionally of a certain type."""
     user = await user_from_token(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    query = select(ObservationEvents).where(ObservationEvents.observer == user.username)
+    query = (
+        select(ObservationEvents)
+        .where(ObservationEvents.observer == user.username)
+        .join(Observations)
+    )
+    if obs_type:
+        query = query.where(Observations.observation_type == obs_type)
+    if max_age > 0:
+        query = query.where(
+            ObservationEvents.submitted_at > datetime.now() - timedelta(minutes=max_age)
+        )
     result = await db.fetch_all(query)
 
-    if format == "native":
+    if fmt == "native":
         return format_as_native(result)
-    elif format == "geojson":
+    elif fmt == "geojson":
         return format_as_geojson(result)
     else:
         raise HTTPException(status_code=400, detail="Invalid format")
