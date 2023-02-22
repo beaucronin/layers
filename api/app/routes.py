@@ -34,6 +34,7 @@ from .models import (
     User,
     UserCreate,
     Token,
+    Reward,
     Interpretation,
     InterpretationRequest,
     UserUpdate,
@@ -166,7 +167,7 @@ async def user_info(token: str = Depends(oauth2_scheme)):
     return user.dict()
 
 
-@app.get("/users/me/rewards")
+@app.get("/users/me/rewards", response_model=list[Reward], )
 async def user_rewards(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
@@ -181,7 +182,7 @@ async def user_rewards(token: str = Depends(oauth2_scheme)):
         .limit(10)
     )
     rewards = await db.fetch_all(query)
-    return [r.dict() for r in rewards]
+    return [Reward(amount=r.amount, created_at=r.created_at) for r in rewards]
 
 
 @app.patch("/users/me")

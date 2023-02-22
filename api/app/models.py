@@ -27,6 +27,10 @@ class UserInDB(User):
     password: str
 
 
+class Reward(BaseModel):
+    amount: int
+    created_at: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
