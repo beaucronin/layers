@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
+from datetime import datetime
 from .schemas import Location
 
 class User(BaseModel):
@@ -29,7 +30,7 @@ class UserInDB(User):
 
 class Reward(BaseModel):
     amount: int
-    created_at: str
+    created_at: datetime
 
 class Token(BaseModel):
     access_token: str
