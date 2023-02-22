@@ -177,7 +177,7 @@ async def user_rewards(token: str = Depends(oauth2_scheme)):
         select(Rewards)
         .where(Rewards.username == user.username)
         .join(ObservationEvents, Rewards.observation_event_id == ObservationEvents.id)
-        .order_by(Rewards.timestamp.desc())
+        .order_by(Rewards.created_at.desc())
         .limit(10)
     )
     rewards = await db.fetch_all(query)
