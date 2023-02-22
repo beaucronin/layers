@@ -25,6 +25,7 @@ from .db import (
     ObservationEvents,
     Observations,
     UserStats as UserStatsDB,
+    Rewards,
     create_transaction,
     create_reward,
     maybe_increase_level,
@@ -163,6 +164,24 @@ async def user_info(token: str = Depends(oauth2_scheme)):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user.dict()
+
+
+@app.get("/users/me/rewards")
+async def user_rewards(token: str = Depends(oauth2_scheme)):
+    user = await user_from_token(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # get most recent rewards
+    query = (
+        select(Rewards)
+        .where(Rewards.username == user.username)
+        .join(ObservationEvents, Rewards.observation_event_id == ObservationEvents.id)
+        .order_by(Rewards.timestamp.desc())
+        .limit(10)
+    )
+    rewards = await db.fetch_all(query)
+    return [r.dict() for r in rewards]
 
 
 @app.patch("/users/me")
@@ -341,7 +360,7 @@ async def _observations(observation_event: ObservationEvent, user: User | None =
     username = "beau"
     if user:
         username = user.username
-    
+
     async with db.transaction():
         geo = None
         if isinstance(observation_event.location, LatLongLocation):
@@ -352,7 +371,7 @@ async def _observations(observation_event: ObservationEvent, user: User | None =
 
         query = insert(ObservationEvents).values(
             # user_id=user.username,
-            username=username,  
+            username=username,
             observer=observation_event.observer,
             source=observation_event.source,
             observed_at=observation_event.observed_at,
@@ -381,7 +400,7 @@ async def _observations(observation_event: ObservationEvent, user: User | None =
 
         reward = compute_reward(observation_event)
 
-        await create_reward(username, reward)
+        await create_reward(username, reward, event_id)
         await create_transaction("house", username, reward, "observation")
         await maybe_increase_level(username)
 
