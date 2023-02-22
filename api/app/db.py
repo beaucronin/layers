@@ -141,11 +141,14 @@ class Rewards(Base):
 
 
 async def create_reward(username: str, amount: int):
-    """Create a reward for a user."""
+    """Create a reward for a user, including both a reward ledger entry and an increment to the 
+    user's XP. This must be done in a transaction (assumed to be handled by the caller)."""
     reward = insert(Rewards).values(
         username=username, amount=amount, created_at=datetime.now()
     )
+    bump = update(Users).where(Users.username == username).values(xp = Users.xp + amount)
     await db.execute(reward)
+    await db.execute(bump)
 
 
 async def create_transaction(
