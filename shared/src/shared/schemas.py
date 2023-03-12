@@ -9,14 +9,17 @@ from geojson_pydantic import FeatureCollection, Feature, Point
 
 # https://github.com/google/open-location-code/wiki/Evaluation-of-Location-Encoding-Systems
 
+
 class LatLongLocation(BaseModel):
     """A location, specified by a longitude and latitude as floats"""
+
     longitude: str | float
     latitude: str | float
 
 
 class GeohashLocation(BaseModel):
     """A location, specified as a geohash"""
+
     geohash: str
 
     class Config:
@@ -26,11 +29,13 @@ class GeohashLocation(BaseModel):
 
 class PlusCodeLocation(BaseModel):
     """A location, specified as a plus code"""
+
     pluscode: str
 
 
 class AddressLocation(BaseModel):
     """A location, specified by an address"""
+
     address: str
 
 
@@ -54,6 +59,7 @@ class AssetObservation(Observation):
 
     class VehicleType(str, Enum):
         """The enum of valid vehicle types for AssetObservations"""
+
         CONTAINER_SHIP = "vehicle:ship:container"
         OIL_TANKER = "vehicle:ship:oil"
         BULK_CARRIER = "vehicle:ship:bulk"
@@ -66,6 +72,7 @@ class AssetObservation(Observation):
 
     class ContainerType(str, Enum):
         """The enum of valid container types for AssetObservations"""
+
         SHIPPING_CONTAINER_40 = "container:multimodal_container:40ft"
         SHIPPING_CONTAINER_20 = "container:multimodal_container:20ft"
         SHIPPING_CONTAINER_10 = "container:multimodal_container:10ft"
@@ -75,9 +82,10 @@ class AssetObservation(Observation):
         TANK_TRAILER = "container:trailer:tank"
         METAL_TANK = "container:tank:metal"
         PLASTIC_TANK = "container:tank:plastic"
-    
+
     class TowerType(str, Enum):
         """The enum of valid tower types for AssetObservations"""
+
         WOOD_POLE = "pole:wood"
         METAL_POLE = "pole:metal"
 
@@ -88,7 +96,7 @@ class AssetObservation(Observation):
         TELEPHONE_TOWER = "tower:telephone"
         LIGHT_TOWER = "tower:light"
         FIBER_TOWER = "tower:fiber"
-    
+
     class EquipmentType(str, Enum):
         GENERATOR = "equipment:generator"
         TRANSFORMER = "equipment:transformer"
@@ -105,9 +113,9 @@ class AssetObservation(Observation):
         DEHUMIDIFIER = "equipment:dehumidifier"
         DRYER = "equipment:dryer"
         HUMIDIFIER = "equipment:humidifier"
-        
+
         MIXER = "equipment:mixer"
-        
+
         REFRIGERATOR = "equipment:refrigerator"
         WATER_HEATER = "equipment:water_heater"
         BOILER = "equipment:boiler"
@@ -115,7 +123,7 @@ class AssetObservation(Observation):
 
         MOTOR = "equipment:motor"
         PUMP = "equipment:pump"
-        
+
     class AssetId(BaseModel):
         """A fragment describing an Asset ID"""
 
@@ -147,8 +155,10 @@ class AssetObservation(Observation):
         MOVING_MARINE = "moving:marine"
         MOVING_AIRBORNE = "moving:airborne"
 
-    observation_type: Literal['asset']
-    asset_type: VehicleType | ContainerType | TowerType | EquipmentType | Literal["asset:generic"]
+    observation_type: Literal["asset"]
+    asset_type: VehicleType | ContainerType | TowerType | EquipmentType | Literal[
+        "asset:generic"
+    ]
     asset_id: Optional[AssetId | list[AssetId]]
     configuration: Optional[AssetConfiguration]
 
@@ -158,6 +168,7 @@ class TransportObservation(Observation):
 
     class TransportMode(str, Enum):
         """The basic modes of transport that a TransportObservation can describe"""
+
         RAIL = "rail"
         SEMI_TRAILER = "semi_trailer"
         SHIP = "ship"
@@ -169,7 +180,7 @@ class TransportObservation(Observation):
         # description = Optional[str]
         # waypoints = list[Location]
 
-    observation_type: Literal['transport']
+    observation_type: Literal["transport"]
     mode: TransportMode
     transporter: Optional[PayloadRef | list[PayloadRef]]
     vessel: Optional[PayloadRef | list[PayloadRef]]
@@ -228,7 +239,6 @@ class FacilityObservation(Observation):
         WOOD_WHOLESALE = "wholesale:wood"
         BUILDING_MATERIALS_WHOLESALE = "wholesale:building_materials"
         TEXTILE_WHOLESALE = "wholesale:textile"
-        
 
         GOLD = "mine:gold"
         SILVER = "mine:silver"
@@ -248,7 +258,7 @@ class FacilityObservation(Observation):
         COLTAN = "mine:coltan"
 
         PETROLEUM = "refinery:petroleum"
-        METAL = "refinery:metal"        
+        METAL = "refinery:metal"
         OTHER = "refinery:other"
 
         WATER_TREATMENT = "water:treatment"
@@ -271,7 +281,7 @@ class FacilityObservation(Observation):
         WASTE_DISPOSAL = "waste:disposal"
         WASTE_TREATMENT = "waste:treatment"
         SOLID_WASTE_TRANSFER = "waste:transfer"
-        
+
         METAL_RECYCLING = "recycling:metal"
         PLASTIC_RECYCLING = "recycling:plastic"
         PAPER_RECYCLING = "recycling:paper"
@@ -285,7 +295,7 @@ class FacilityObservation(Observation):
         STRIP_MINING = "extraction:surface_mining:strip"
         SHAFT_MINING = "extraction:underground_mining:shaft"
         DRIFT_MINING = "extraction:underground_mining:drift"
-        SLOPE_MINING = "extraction:underground_mining:slope"        
+        SLOPE_MINING = "extraction:underground_mining:slope"
 
         CHLORALKALI = "reaction:chloralkali"
         CALCINATION = "reaction:calcination"
@@ -332,7 +342,7 @@ class FacilityObservation(Observation):
         WELDING = "fabrication:welding"
         PAINTING = "fabrication:painting"
         COATING = "fabrication:coating"
-        POWDER_COATING = "fabrication:coating:powder"        
+        POWDER_COATING = "fabrication:coating:powder"
         ASSEMBLY = "fabrication:assembly"
         CASTING = "fabrication:casting"
         FORGING = "fabrication:forging"
@@ -386,9 +396,7 @@ class FacilityObservation(Observation):
         STEAM = "energy:transformation:steam_engine"
         OTHER_FUEL = "energy:generation:thermal:other"
 
-
-
-    observation_type: Literal['facility']
+    observation_type: Literal["facility"]
     description: str
     functions: Optional[FacilityFunction | list[FacilityFunction]]
     processes: Optional[FacilityProcess | list[FacilityProcess]]
@@ -422,7 +430,7 @@ class AgricultureObservation(Observation):
         FRUIT_NUTS = "fruit_nuts[3]"
         TROPICAL_FRUIT = "fruit_nuts:tropical[31]"
         CITRUS = "fruit_nuts:citrus[32]"
-        GRAPES = "fruit_nuts:grapes[33]"    
+        GRAPES = "fruit_nuts:grapes[33]"
         BERRIES = "fruit_nuts:berries[34]"
         POMME_STONE = "fruit_nuts:pomme_stone[35]"
         NUTS = "fruit_nuts:nuts[36]"
@@ -456,7 +464,7 @@ class AgricultureObservation(Observation):
         PEAS = "legumes:peas[77]"
         PIGEONPEAS = "legumes:pigeonpeas[78]"
         OTHER_LEGUMES = "legumes:other[79]"
-        SUGAR_CROPS = "sugar_crops[8]"  
+        SUGAR_CROPS = "sugar_crops[8]"
         SUGAR_BEET = "sugar_crops:sugar_beet[81]"
         SUGAR_CANE = "sugar_crops:sugar_cane[82]"
         SWEET_SORGHUM = "sugar_crops:sweet_sorghum[83]"
@@ -481,7 +489,7 @@ class AgricultureObservation(Observation):
         OTHER_POULTRY = "poultry:other"
         HORSES = "horses"
         OTHER_LIVESTOCK = "other_livestock"
-    
+
     class TreeType(str, Enum):
         pass
 
@@ -501,6 +509,53 @@ class ResourceObservation(Observation):
 
         id_type: IDType
         id_text: str
+
+    class ResourceType(str, Enum):
+        IRRADIANCE = "irradiance"
+        WIND = "wind"
+        
+        WATER_FILTRATION = "regulation:water:filtration"
+        AIR_FILTRATION = "regulation:air:filtration"
+        PEST_CONTROL = "regulation:pest_control"
+        DISEASE_CONTROL = "regulation:disease_control"
+        POLLINATION = "regulation:pollination"
+        CARBON_STORAGE = "regulation:carbon_storage"
+        CARBON_CAPTURE = "regulation:carbon_capture"
+        COASTAL_PROTECTION = "regulation:protection:coastal"
+        FLOOD_PROTECTION = "regulation:protection:flood"
+        WIND_PROTECTION = "regulation:protection:wind"
+        
+        WATER_FLOW = "provision:water:flow"
+        WATER_RESERVOIR = "provision:water:reservoir"
+        TIMBER = "provision:timber"
+        OLD_GROWTH = "provision:timber:old_growth"
+        FARMED_TIMBER = "provision:timber:farmed"
+        MEDICINAL_PLANTS = "provision:forage:medicinal_plants"
+        FOOD_FORAGE = "provision:forage:food_plants"
+        FIBER = "provision:fiber"
+        GAME = "provision:game"
+        FISH = "provision:fish"
+        FUEL = "provision:fuel"
+
+        SOIL_FORMATION = "supporting:soil_formation"
+        SEISMIC_STABILITY = "seismic_stability"
+
+        MINERAL = "provision:mineral"
+        METALLIC = "provision:mineral:metallic"
+        NON_METALLIC = "provision:mineral:non_metallic"
+        LIMESTONE = "provision:mineral:non_metallic:limestone"
+        
+        FOSSIL_ENERGY = "provision:fossil_energy"
+        COAL = "provision:fossil_energy:coal"
+        OIL = "provision:fossil_energy:oil"
+        GAS = "provision:fossil_energy:gas"
+        FERROUS = "provision:mineral:metallic:ferrous"
+        NON_FERROUS = "provision:mineral:metallic:non_ferrous"
+        PRECIOUS_METAL = "provision:mineral:metallic:precious"
+        CULTURAL_HERITAGE = "culture"
+        BEAUTY = "beauty"
+
+
 
     class Amount(BaseModel):
         """An amount of a resource"""
@@ -522,7 +577,7 @@ class ResourceObservation(Observation):
         unit: ResourceUnit
         quantity: str | float
 
-    observation_type: Literal['resource']
+    observation_type: Literal["resource"]
     description: str
     resource_id: ResourceId
     amount: Amount
@@ -570,7 +625,7 @@ class ExtentObservation(Observation):
         HERBACEOUS_WETLANDS = "wetlands:herbaceous[95]"
         OTHER = "other[99]"
 
-    observation_type: Literal['extent']
+    observation_type: Literal["extent"]
     description: Optional[str]
     extent_id: Optional[str]
     boundary_type: Optional[BoundaryType]
@@ -584,7 +639,7 @@ class ConnectionObservation(Observation):
         CONDUCTOR = "conductor"
         ALUMINUM_CONDUCTOR = "conductor:aluminum"
         COPPER_CONDUCTOR = "conductor:copper"
-        
+
         PIPE = "pipe"
         COPPER_PIPE = "pipe:copper"
         PVC_PIPE = "pipe:pvc"
@@ -599,14 +654,14 @@ class ConnectionObservation(Observation):
         CONDUIT = "conduit"
         PVC_CONDUIT = "conduit:pvc"
         STEEL_CONDUIT = "conduit:steel"
-        
+
         CANAL = "canal"
         EARTHEN_CANAL = "canal:earthen"
         CONCRETE_CANAL = "canal:concrete"
         DITCH = "ditch"
-        
+
         OTHER = "other"
-    
+
     class ConnectionFunction(str, Enum):
         ELECTRICITY_TRANSMISSION = "electricity:transmission"
         ELECTRICITY_DISTRIBUTION = "electricity:distribution"
@@ -616,7 +671,7 @@ class ConnectionObservation(Observation):
         WATER_DISTRIBUTION = "water:distribution"
         SEWAGE = "water:sewage"
 
-    observation_type: Literal['connection']
+    observation_type: Literal["connection"]
     connection_type: ConnectionType
     connection_function: ConnectionFunction
 
@@ -629,11 +684,19 @@ class SourceType(str, Enum):
     OTHER = "other"
 
 
-SomeObservation = AssetObservation | TransportObservation | FacilityObservation | ResourceObservation | ExtentObservation
+SomeObservation = (
+    AssetObservation
+    | AgricultureObservation
+    | TransportObservation
+    | FacilityObservation
+    | ResourceObservation
+    | ExtentObservation
+)
 
 
 class ObservationEvent(BaseModel, extra=Extra.forbid, title="Observation"):
     """NOTE: This schema is automatically generated and should not be modified here"""
+
     observer: str
     source: SourceType
     observed_at: datetime

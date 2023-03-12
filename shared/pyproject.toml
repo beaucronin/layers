@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "shared"
+version = "0.1.0"
+description = "Shared classes and methods for Layers Project"
+authors = ["Beau Cronin <beau.cronin@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "1.10.2"
+basket-case = "0.1.4"
+geojson-pydantic = "0.5.0"
+SQLAlchemy = "1.4.45"
+psycopg2-binary = "2.9.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -96,10 +96,54 @@ class Observations(Base):
             name="observation_type",
         )
     )
+    geo = Column(Geometry(geometry_type="POLYGON", srid=4326))
     payload = Column(JSONB)
 
     class Config:
         orm_mode = True
+
+
+class Entity(Base):
+    __tablename__ = "entities"
+    id = Column(Integer, primary_key=True)
+    entity_type = Column(
+        Enum("asset", "facility", "resource", "extent", name="entity_type")
+    )
+    created_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True))
+    geo = Column(Geometry(geometry_type="POLYGON", srid=4326))
+    data = Column(JSONB)
+
+    class Config:
+        orm_mode = True
+
+
+class EntityObservation(Base):
+    """A many-to-many relationship between entities and observations."""
+
+    __tablename__ = "entities_observations"
+    entity_id = Column(Integer, ForeignKey("entities.id"), primary_key=True)
+    observation_id = Column(Integer, ForeignKey("observations.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True))
+    status = Column(Enum("active", "inactive", name="entity_observation_status"))
+
+
+class EntityIdentifier(Base):
+    """The various kinds of identifiers that can be associated with an entity. These include
+    - government-issued (e.g., license plates),
+    - manufacturer-issued (e.g., serial numbers, VINs),
+    - operator-issued (e.g., asset tags, fleet numbers), and
+    - end-user-issued (e.g., nicknames or common names)
+    """
+
+    __tablename__ = "entity_identifiers"
+    id = Column(Integer, primary_key=True)
+    entity_id = Column(Integer, ForeignKey("entities.id"))
+    issuer_type = Column(
+        Enum("government", "manufacturer", "operator", "end-user", name="issuer_type")
+    )
+    issuer = Column(String(250))
+    identifier = Column(String(250))
 
 
 class Entries(Base):
@@ -145,7 +189,10 @@ async def create_reward(username: str, amount: int, event_id: int):
     """Create a reward for a user, including both a reward ledger entry and an increment to the
     user's XP. This must be done in a transaction (assumed to be handled by the caller)."""
     reward = insert(Rewards).values(
-        username=username, amount=amount, observation_event_id=event_id, created_at=datetime.now()
+        username=username,
+        amount=amount,
+        observation_event_id=event_id,
+        created_at=datetime.now(),
     )
     bump = update(Users).where(Users.username == username).values(xp=Users.xp + amount)
     await db.execute(reward)

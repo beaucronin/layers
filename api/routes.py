@@ -4,13 +4,13 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert, update, func
 
-from .auth import (
+from shared.auth import (
     authenticate_user,
     create_access_token,
     get_password_hash,
     user_from_token,
 )
-from .schemas import (
+from shared.schemas import (
     ObservationEvent,
     FacilityObservation,
     TransportObservation,
@@ -19,7 +19,7 @@ from .schemas import (
     ExtentObservation,
     AgricultureObservation,
 )
-from .db import (
+from shared.db import (
     db,
     Users,
     ObservationEvents,
@@ -30,7 +30,7 @@ from .db import (
     create_reward,
     maybe_increase_level,
 )
-from .models import (
+from shared.models import (
     User,
     UserCreate,
     Token,
@@ -40,7 +40,7 @@ from .models import (
     UserUpdate,
     UserStats as UserStatsModel,
 )
-from .util import (
+from shared.util import (
     enum_to_dict,
     extract_place_info,
     format_as_native,
