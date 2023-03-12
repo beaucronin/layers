@@ -23,7 +23,7 @@ job "api" {
 
       config {
         command = "/Users/beau/venv/bin/uvicorn"
-        args    = ["app.routes:app", "--port", "8001", "--host", "192.168.7.158", "--app-dir", "/Users/beau/layers/api"]
+        args    = ["routes:app", "--port", "8001", "--host", "192.168.7.158", "--app-dir", "/Users/beau/layers/api"]
       }
       env {
         VIRTUAL_ENV = "/Users/beau/venv"
