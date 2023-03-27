@@ -450,7 +450,9 @@ async def get_observations(
 
 
 @app.get("/entities/geohash/{geohash}.{fmt}")
-async def get_entities_geohash(geohash: str, fmt: str, entity_type: Optional[str] = None):
+async def get_entities_geohash(
+    geohash: str, fmt: str, entity_type: Optional[str] = None
+):
     """Get the entities within a certain area, optionally of a certain type."""
     (south, west, north, east) = geohash_to_lat_lon_bbox(geohash)
     return await get_entities_bbox(south, west, north, east, fmt, entity_type)
@@ -475,7 +477,10 @@ async def get_entities_bbox(
 ):
     query = select(EntityDB).where(
         func.ST_Intersects(
-            EntityDB.location, func.ST_SetSRID(func.ST_MakeEnvelope(west, south, east, north, srid=4326), 4326)
+            EntityDB.location,
+            func.ST_SetSRID(
+                func.ST_MakeEnvelope(west, south, east, north, srid=4326), 4326
+            ),
         )
     )
     if entity_type:
@@ -484,10 +489,14 @@ async def get_entities_bbox(
     entities = [EntityDB(**dict(r)) for r in result if r is not None]
     out = []
     for e in entities:
-        es = EntitySchema(entity_type=e.entity_type)
-        if e.location:
-            shape = to_shape(e.location.desc)
-            es.location = LatLongLocation(longitude=shape.x, latitude=shape.y)
+        if not e.location:
+            continue
+        shape = to_shape(e.location.desc)
+        es = EntitySchema(
+            entity_type=e.entity_type,
+            location=LatLongLocation(longitude=shape.x, latitude=shape.y),
+            latest_observation_at=e.latest_observation_at,
+        )
         out.append(es)
 
     return out
