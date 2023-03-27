@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert, update, func
+from geoalchemy2.shape import to_shape
 
 from shared.auth import (
     authenticate_user,
@@ -18,13 +19,14 @@ from shared.schemas import (
     LatLongLocation,
     ExtentObservation,
     AgricultureObservation,
+    Entity as EntitySchema,
 )
 from shared.db import (
     db,
     Users,
     ObservationEvents,
     Observations,
-    Entity,
+    Entity as EntityDB,
     # UserStats as UserStatsDB,
     Rewards,
     create_transaction,
@@ -471,22 +473,24 @@ async def get_entities_bbox(
     fmt: str = "json",
     entity_type: Optional[str] = None,
 ):
-    query = select(Entity).where(
+    query = select(EntityDB).where(
         func.ST_Intersects(
-            Entity.location, func.ST_MakeEnvelope(west, south, east, north, 4326)
+            EntityDB.location, func.ST_SetSRID(func.ST_MakeEnvelope(west, south, east, north, srid=4326), 4326)
         )
     )
-    print(west, south, east, north)
     if entity_type:
-        query = query.where(Entity.entity_type == entity_type)
+        query = query.where(EntityDB.entity_type == entity_type)
     result = await db.fetch_all(query)
-    print(result)
+    entities = [EntityDB(**dict(r)) for r in result if r is not None]
+    out = []
+    for e in entities:
+        es = EntitySchema(entity_type=e.entity_type)
+        if e.location:
+            shape = to_shape(e.location.desc)
+            es.location = LatLongLocation(longitude=shape.x, latitude=shape.y)
+        out.append(es)
 
-    return result
-    # if fmt == "json" or fmt == "geojson":
-    #     return format_as_geojson(result)
-    # else:
-    #     raise HTTPException(status_code=400, detail="Invalid format")
+    return out
 
 
 @app.post("/interpretation", response_model=Interpretation)

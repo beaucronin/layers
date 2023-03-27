@@ -40,10 +40,25 @@ class AddressLocation(BaseModel):
 
 
 Location = LatLongLocation | GeohashLocation | PlusCodeLocation
-
+Shape = FeatureCollection
 
 class PayloadRef(BaseModel):
     ref: str | int
+
+
+class Identifier(BaseModel):
+    """A fragment describing an Asset ID"""
+
+    class IDType(str, Enum):
+        US_LICENSE = "license_plate:united_states"
+        EU_LICENSE = "license_plate:eu"
+        UK_LICENSE = "license_plate:uk"
+        BIC = "BIC"
+        ASSET_TAG = "asset_tag"
+        VIN = "VIN"
+
+    id_type: IDType
+    id_text: Optional[str]
 
 
 class Observation(BaseModel, extra=Extra.forbid):
@@ -124,20 +139,6 @@ class AssetObservation(Observation):
         MOTOR = "equipment:motor"
         PUMP = "equipment:pump"
 
-    class AssetId(BaseModel):
-        """A fragment describing an Asset ID"""
-
-        class IDType(str, Enum):
-            US_LICENSE = "license_plate:united_states"
-            EU_LICENSE = "license_plate:eu"
-            UK_LICENSE = "license_plate:uk"
-            BIC = "BIC"
-            ASSET_TAG = "asset_tag"
-            VIN = "VIN"
-
-        id_type: IDType
-        id_text: Optional[str]
-
     class AssetConfiguration(str, Enum):
         FREE_STANDING = "open:free_standing"
         STACKED = "open:stacked"
@@ -159,7 +160,7 @@ class AssetObservation(Observation):
     asset_type: VehicleType | ContainerType | TowerType | EquipmentType | Literal[
         "asset:generic"
     ]
-    asset_id: Optional[AssetId | list[AssetId]]
+    asset_id: Optional[Identifier | list[Identifier]]
     configuration: Optional[AssetConfiguration]
 
 
@@ -709,6 +710,15 @@ class ObservationEvent(BaseModel, extra=Extra.forbid, title="Observation"):
             return len(self.payload)
         else:
             return 1
+
+
+class Entity(BaseModel, extra=Extra.forbid, title="Entity"):
+    entity_type: str
+    location: LatLongLocation
+    latest_observation_at: datetime
+    identifiers: Optional[list[Identifier]]
+    shape: Optional[Shape]
+    observations: Optional[list[Observation]]
 
 
 def main():
