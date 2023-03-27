@@ -476,6 +476,7 @@ async def get_entities_bbox(
             Entity.geo, func.ST_MakeEnvelope(west, south, east, north, srid=4326)
         )
     )
+    print(west, south, east, north)
     if entity_type:
         query = query.where(Entity.entity_type == entity_type)
     result = await db.fetch_all(query)
