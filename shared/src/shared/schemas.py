@@ -719,6 +719,7 @@ class Entity(BaseModel, extra=Extra.forbid, title="Entity"):
     identifiers: Optional[list[Identifier]]
     shape: Optional[Shape]
     observations: Optional[list[Observation]]
+    data: Optional[dict[str, Any]]
 
 
 def main():

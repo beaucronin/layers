@@ -151,17 +151,20 @@ def synthesize_entity(ent: Entity, session: Session):
     res = session.execute(stmt).scalars()
     latest_obs_at = None
     latest_geo: Point = None
+    data = {}
 
     for obs in res.all():
-        typer.echo(obs)
         if not latest_obs_at or obs.event.observed_at > latest_obs_at:
             latest_obs_at = obs.event.observed_at
-        if not latest_geo and obs.event.geo:
+        if obs.event.geo:
             latest_geo = obs.event.geo
+        if obs.payload:
+            data.update(obs.payload)
     
     # for now, we just update the entity with the latest observation
     ent.latest_observation_at = latest_obs_at
     ent.updated_at = datetime.now()
+    ent.data = data
     if latest_geo:
         ent.location = latest_geo
     session.flush()
