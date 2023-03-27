@@ -480,10 +480,11 @@ async def get_entities_bbox(
         query = query.where(Entity.entity_type == entity_type)
     result = await db.fetch_all(query)
 
-    if fmt == "json" or fmt == "geojson":
-        return format_as_geojson(result)
-    else:
-        raise HTTPException(status_code=400, detail="Invalid format")
+    return result
+    # if fmt == "json" or fmt == "geojson":
+    #     return format_as_geojson(result)
+    # else:
+    #     raise HTTPException(status_code=400, detail="Invalid format")
 
 
 @app.post("/interpretation", response_model=Interpretation)
