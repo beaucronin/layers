@@ -479,6 +479,7 @@ async def get_entities_bbox(
     if entity_type:
         query = query.where(Entity.entity_type == entity_type)
     result = await db.fetch_all(query)
+    print(result)
 
     return result
     # if fmt == "json" or fmt == "geojson":
