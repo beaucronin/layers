@@ -5,6 +5,7 @@ import typer
 from sqlalchemy import select, create_engine, insert, func
 from sqlalchemy.orm import Session
 from geoalchemy2 import Geometry
+from geojson_pydantic.geometries import Point, Polygon
 from shared.db import (
     Users,
     ObservationEvents,
@@ -112,7 +113,8 @@ def create_entity_from_observation(obs, session: Session) -> Entity:
         entity_type=obs.observation_type,
         created_at=datetime.now(),
         updated_at=datetime.now(),
-        geo=None,
+        shape=None,
+        location=None,
         data={},
     )
     session.add(ent)
@@ -148,14 +150,20 @@ def synthesize_entity(ent: Entity, session: Session):
     )
     res = session.execute(stmt).scalars()
     latest_obs_at = None
+    latest_geo: Point = None
 
     for obs in res.all():
         typer.echo(obs)
         if not latest_obs_at or obs.event.observed_at > latest_obs_at:
             latest_obs_at = obs.event.observed_at
-
+        if not latest_geo and obs.event.geo:
+            latest_geo = obs.event.geo
+    
+    # for now, we just update the entity with the latest observation
     ent.latest_observation_at = latest_obs_at
     ent.updated_at = datetime.now()
+    if latest_geo:
+        ent.location = latest_geo
     session.flush()
 
 
