@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert, update, func
 from geoalchemy2.shape import to_shape
+from shapely import Point
 
 from shared.auth import (
     authenticate_user,
@@ -491,7 +492,7 @@ async def get_entities_bbox(
     for e in entities:
         if not e.location:
             continue
-        shape = to_shape(e.location.desc)
+        shape: Point = to_shape(e.location)
         es = EntitySchema(
             entity_type=e.entity_type,
             location=LatLongLocation(longitude=shape.x, latitude=shape.y),
