@@ -473,7 +473,7 @@ async def get_entities_bbox(
 ):
     query = select(Entity).where(
         func.ST_Intersects(
-            Entity.location, func.ST_MakeEnvelope(west, south, east, north, srid=4326)
+            Entity.location, func.ST_MakeEnvelope(west, south, east, north, 4326)
         )
     )
     print(west, south, east, north)
