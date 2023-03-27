@@ -4,6 +4,83 @@ import basket_case as bc
 import geojson_pydantic as gp
 from .schemas import ObservationEvent
 
+import math
+
+def tile_to_lat_lon_bbox(z, y, x):
+    """
+    Convert z, y, and x Slippy map tile indices to a lat/long bounding box.
+
+    Args:
+        z (int): The zoom level.
+        y (int): The tile row index.
+        x (int): The tile column index.
+
+    Returns:
+        tuple: A tuple containing the bounding box coordinates in the format:
+               (south_latitude, west_longitude, north_latitude, east_longitude)
+    """
+    # This code, except for this comment, was written by ChatGPT
+
+    def tile_to_lat(y, z):
+        n = math.pi - 2 * math.pi * y / (2 ** z)
+        return math.degrees(math.atan(math.sinh(n)))
+
+    def tile_to_lon(x, z):
+        return x / (2 ** z) * 360 - 180
+
+    south_lat = tile_to_lat(y + 1, z)
+    west_lon = tile_to_lon(x, z)
+    north_lat = tile_to_lat(y, z)
+    east_lon = tile_to_lon(x + 1, z)
+
+    return (south_lat, west_lon, north_lat, east_lon)
+
+
+def geohash_to_lat_lon_bbox(geohash):
+    """
+    Convert a geohash to a lat/long bounding box.
+
+    Args:
+        geohash (str): The geohash string of varying length.
+
+    Returns:
+        tuple: A tuple containing the bounding box coordinates in the format:
+               (south_latitude, west_longitude, north_latitude, east_longitude)
+    """
+    # This code, except for this comment, was written by ChatGPT
+
+    base32 = "0123456789bcdefghjkmnpqrstuvwxyz"
+    bits = [16, 8, 4, 2, 1]
+    lon_range = [-180.0, 180.0]
+    lat_range = [-90.0, 90.0]
+
+    is_even = True
+    char = 0
+
+    for c in geohash:
+        char = base32.index(c)
+
+        for mask in bits:
+            if is_even:
+                mid = (lon_range[0] + lon_range[1]) / 2
+                if char & mask:
+                    lon_range[0] = mid
+                else:
+                    lon_range[1] = mid
+            else:
+                mid = (lat_range[0] + lat_range[1]) / 2
+                if char & mask:
+                    lat_range[0] = mid
+                else:
+                    lat_range[1] = mid
+
+            is_even = not is_even
+
+    south_lat, north_lat = lat_range
+    west_lon, east_lon = lon_range
+
+    return (south_lat, west_lon, north_lat, east_lon)
+
 
 def enum_to_dict(enum, alpha=False):
     """Convert an enum to a dict of title-cased keys and the corresponding values, optionally alphabetizing."""

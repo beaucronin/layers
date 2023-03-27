@@ -1,3 +1,4 @@
+from typing import List
 import os
 import databases
 from datetime import datetime
@@ -15,8 +16,10 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
 )
+from sqlalchemy.orm import relationship, Mapped, declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
+
+# from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
 from .util import level_for_xp
 
@@ -76,6 +79,7 @@ class ObservationEvents(Base):
     location = Column(JSONB)
     observation_count = Column(Integer)
     geo = Column(Geometry(geometry_type="POINT", srid=4326))
+    observations = relationship("Observations", back_populates="event")
 
     class Config:
         orm_mode = True
@@ -98,6 +102,8 @@ class Observations(Base):
     )
     geo = Column(Geometry(geometry_type="POLYGON", srid=4326))
     payload = Column(JSONB)
+    event = relationship("ObservationEvents", back_populates="observations")
+    entities = relationship("EntityObservation", back_populates="observation")
 
     class Config:
         orm_mode = True
@@ -111,8 +117,11 @@ class Entity(Base):
     )
     created_at = Column(DateTime(timezone=True))
     updated_at = Column(DateTime(timezone=True))
+    latest_observation_at = Column(DateTime(timezone=True))
     geo = Column(Geometry(geometry_type="POLYGON", srid=4326))
     data = Column(JSONB)
+    observations = relationship("EntityObservation", back_populates="entity")
+    identifiers = relationship("EntityIdentifier", back_populates="entity")
 
     class Config:
         orm_mode = True
@@ -126,6 +135,8 @@ class EntityObservation(Base):
     observation_id = Column(Integer, ForeignKey("observations.id"), primary_key=True)
     created_at = Column(DateTime(timezone=True))
     status = Column(Enum("active", "inactive", name="entity_observation_status"))
+    entity = relationship("Entity", back_populates="observations")
+    observation = relationship("Observations", back_populates="entities")
 
 
 class EntityIdentifier(Base):
@@ -144,6 +155,8 @@ class EntityIdentifier(Base):
     )
     issuer = Column(String(250))
     identifier = Column(String(250))
+    identifier_canonical = Column(String(250))
+    entity = relationship("Entity", back_populates="identifiers")
 
 
 class Entries(Base):

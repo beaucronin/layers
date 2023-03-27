@@ -24,7 +24,8 @@ from shared.db import (
     Users,
     ObservationEvents,
     Observations,
-    UserStats as UserStatsDB,
+    Entity,
+    # UserStats as UserStatsDB,
     Rewards,
     create_transaction,
     create_reward,
@@ -38,7 +39,7 @@ from shared.models import (
     Interpretation,
     InterpretationRequest,
     UserUpdate,
-    UserStats as UserStatsModel,
+    # UserStats as UserStatsModel,
 )
 from shared.util import (
     enum_to_dict,
@@ -46,6 +47,8 @@ from shared.util import (
     format_as_native,
     format_as_geojson,
     compute_reward,
+    tile_to_lat_lon_bbox,
+    geohash_to_lat_lon_bbox,
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -167,7 +170,10 @@ async def user_info(token: str = Depends(oauth2_scheme)):
     return user.dict()
 
 
-@app.get("/users/me/rewards", response_model=list[Reward], )
+@app.get(
+    "/users/me/rewards",
+    response_model=list[Reward],
+)
 async def user_rewards(token: str = Depends(oauth2_scheme)):
     user = await user_from_token(token, db)
     if not user:
@@ -436,6 +442,45 @@ async def get_observations(
     if fmt == "native":
         return format_as_native(result)
     elif fmt == "geojson":
+        return format_as_geojson(result)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format")
+
+
+@app.get("/entities/geohash/{geohash}")
+async def get_entities_geohash(geohash: str, entity_type: Optional[str] = None):
+    """Get the entities within a certain area, optionally of a certain type."""
+    (south, west, north, east) = geohash_to_lat_lon_bbox(geohash)
+    return await get_entities_bbox(south, west, north, east, entity_type)
+
+
+@app.get("/entities/{z}/{x}/{y}.{fmt}")
+async def get_entities_tile(
+    z: int, x: int, y: int, fmt: str, entity_type: Optional[str] = None
+):
+    """Get the entities within a certain area, optionally of a certain type."""
+    (south, west, north, east) = tile_to_lat_lon_bbox(z=z, y=y, x=x)
+    return await get_entities_bbox(south, west, north, east, fmt, entity_type)
+
+
+async def get_entities_bbox(
+    south: float,
+    west: float,
+    north: float,
+    east: float,
+    fmt: str = "json",
+    entity_type: Optional[str] = None,
+):
+    query = select(Entity).where(
+        func.ST_Intersects(
+            Entity.geo, func.ST_MakeEnvelope(west, south, east, north, srid=4326)
+        )
+    )
+    if entity_type:
+        query = query.where(Entity.entity_type == entity_type)
+    result = await db.fetch_all(query)
+
+    if fmt == "json" or fmt == "geojson":
         return format_as_geojson(result)
     else:
         raise HTTPException(status_code=400, detail="Invalid format")
