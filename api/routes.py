@@ -447,14 +447,14 @@ async def get_observations(
         raise HTTPException(status_code=400, detail="Invalid format")
 
 
-@app.get("/entities/geohash/{geohash}")
-async def get_entities_geohash(geohash: str, entity_type: Optional[str] = None):
+@app.get("/entities/geohash/{geohash}.{fmt}")
+async def get_entities_geohash(geohash: str, fmt: str, entity_type: Optional[str] = None):
     """Get the entities within a certain area, optionally of a certain type."""
     (south, west, north, east) = geohash_to_lat_lon_bbox(geohash)
-    return await get_entities_bbox(south, west, north, east, entity_type)
+    return await get_entities_bbox(south, west, north, east, fmt, entity_type)
 
 
-@app.get("/entities/{z}/{x}/{y}.{fmt}")
+@app.get("/entities/tile/{z}/{x}/{y}.{fmt}")
 async def get_entities_tile(
     z: int, x: int, y: int, fmt: str, entity_type: Optional[str] = None
 ):
