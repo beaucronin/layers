@@ -480,7 +480,6 @@ async def get_entities_bbox(
 ):
     query = (
         select(EntityDB)
-        .join(EntityIdentifier)
         .where(
             func.ST_Intersects(
                 EntityDB.location,
@@ -494,10 +493,16 @@ async def get_entities_bbox(
         query = query.where(EntityDB.entity_type == entity_type)
     result = await db.fetch_all(query)
     entities = [EntityDB(**dict(r)) for r in result if r is not None]
+
     out = []
     for e in entities:
         if not e.location:
             continue
+
+        subquery = select(EntityIdentifier).where(EntityIdentifier.entity_id == e.id)
+        e.identifiers = await db.fetch_all(subquery)
+
+        # convert the location from a geoalchemy WKBElement to a shapely Point geometry
         shape: Point = to_shape(e.location)
         es = EntitySchema(
             entity_type=e.entity_type,
@@ -509,6 +514,8 @@ async def get_entities_bbox(
             ],
         )
         if e.shape:
+            # convert the shape from a geoalchemy WKBElement to a 
+            # geojson FeatureCollection
             es.shape = to_geojson(to_shape(e.shape))
         if e.data:
             es.data = e.data
