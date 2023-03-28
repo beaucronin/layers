@@ -21,6 +21,7 @@ from shared.schemas import (
     ExtentObservation,
     AgricultureObservation,
     Entity as EntitySchema,
+    Identifier,
 )
 from shared.db import (
     db,
@@ -503,7 +504,8 @@ async def get_entities_bbox(
             location=LatLongLocation(longitude=shape.x, latitude=shape.y),
             latest_observation_at=e.latest_observation_at,
             identifiers=[
-                {"id_type": "generic", "id_text": id_.id_text} for id_ in e.identifiers
+                Identifier(id_type="generic", id_text=id_.identifier)
+                for id_ in e.identifiers
             ],
         )
         if e.shape:
