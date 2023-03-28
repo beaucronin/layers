@@ -56,6 +56,7 @@ class Identifier(BaseModel):
         BIC = "BIC"
         ASSET_TAG = "asset_tag"
         VIN = "VIN"
+        GENERIC = "generic"
 
     id_type: IDType
     id_text: Optional[str]

@@ -14,6 +14,7 @@ from shared.db import (
     EntityObservation,
     EntityIdentifier,
 )
+from shared.util import canonicalize_identifier
 
 
 DATABASE_URL = os.getenv("DB_CREDS")
@@ -160,6 +161,19 @@ def synthesize_entity(ent: Entity, session: Session):
             latest_geo = obs.event.geo
         if obs.payload:
             data.update(obs.payload)
+
+            if "asset_id" in obs.payload:
+                asset_id = obs.payload["asset_id"]
+                if "id_text" in asset_id:
+                    id_text = asset_id["id_text"]
+                    id_type = asset_id.get("id_type")
+                    ent.identifiers.append(
+                        EntityIdentifier(
+                            identifier=id_text,
+                            identifier_canonical=canonicalize_identifier(id_text),
+                            issuer_type='operator',
+                        )
+                    )
     
     # for now, we just update the entity with the latest observation
     ent.latest_observation_at = latest_obs_at

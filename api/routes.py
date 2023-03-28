@@ -28,6 +28,7 @@ from shared.db import (
     ObservationEvents,
     Observations,
     Entity as EntityDB,
+    EntityIdentifier,
     # UserStats as UserStatsDB,
     Rewards,
     create_transaction,
@@ -476,12 +477,16 @@ async def get_entities_bbox(
     fmt: str = "json",
     entity_type: Optional[str] = None,
 ):
-    query = select(EntityDB).where(
-        func.ST_Intersects(
-            EntityDB.location,
-            func.ST_SetSRID(
-                func.ST_MakeEnvelope(west, south, east, north, srid=4326), 4326
-            ),
+    query = (
+        select(EntityDB)
+        .join(EntityIdentifier)
+        .where(
+            func.ST_Intersects(
+                EntityDB.location,
+                func.ST_SetSRID(
+                    func.ST_MakeEnvelope(west, south, east, north, srid=4326), 4326
+                ),
+            )
         )
     )
     if entity_type:
@@ -497,6 +502,9 @@ async def get_entities_bbox(
             entity_type=e.entity_type,
             location=LatLongLocation(longitude=shape.x, latitude=shape.y),
             latest_observation_at=e.latest_observation_at,
+            identifiers=[
+                {"id_type": "generic", "id_text": id_.id_text} for id_ in e.identifiers
+            ],
         )
         if e.shape:
             es.shape = to_geojson(to_shape(e.shape))

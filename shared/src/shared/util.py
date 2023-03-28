@@ -146,6 +146,11 @@ def format_as_geojson(result):
     return gp.FeatureCollection(features=features)
 
 
+def canonicalize_identifier(orig: str) -> str:
+    """Canonicalize an identifier."""
+    return orig.lower().replace(" ", "_").strip()
+
+
 def compute_reward(observation_event: ObservationEvent) -> int:
     """Compute the reward for an observation."""
     return observation_event.num_observations() * 10
